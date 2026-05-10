@@ -1,0 +1,58 @@
+name: luminai
+description: "LuminAI — Elite AI-Based Personal Trainer"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Design
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.3.0
+  percent_indicator: ^4.2.3
+  fl_chart: ^0.68.0
+
+  # AI / Camera
+  camera: ^0.11.0+2
+  google_mlkit_pose_detection: ^0.12.0
+
+  # Voice Coach (uncomment when upgrading Kotlin/Gradle)
+  flutter_tts: ^4.2.0
+
+  # Local Persistence
+  shared_preferences: ^2.3.0
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  sqflite_common_ffi: ^2.3.3
+  google_generative_ai: ^0.4.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/LuminAI.png
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/LuminAI.png"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#1A1B22"
+  image: "assets/LuminAI.png"
+  android: true
+  ios: true
+
+dependency_overrides:
+  camera_android_camerax: 0.6.7+1

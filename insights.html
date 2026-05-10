@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LuminAI Health Insights</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary": "#5f5e5e",
+                        "inverse-primary": "#b6c4ff",
+                        "inverse-surface": "#2f3131",
+                        "outline-variant": "#c3c5d9",
+                        "on-surface-variant": "#434656",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "tertiary-container": "#666868",
+                        "on-background": "#1a1c1c",
+                        "background": "#f9f9f9",
+                        "surface-container-high": "#e8e8e8",
+                        "tertiary": "#4e5050",
+                        "primary": "#0041c8",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-low": "#f3f3f3",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "outline": "#737688",
+                        "primary-fixed": "#dce1ff",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-container": "#656464",
+                        "surface-bright": "#f9f9f9",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#004dea",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-error": "#ffffff",
+                        "primary-container": "#0055ff",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "surface": "#f9f9f9",
+                        "on-primary-fixed-variant": "#0039b3",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-primary-fixed": "#001551",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-container": "#e7e7e7",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary-container": "#e3e6ff",
+                        "on-surface": "#1a1c1c",
+                        "secondary-container": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "unit": "4px",
+                        "md": "16px",
+                        "margin-mobile": "20px",
+                        "xxl": "64px",
+                        "sm": "8px",
+                        "xl": "40px",
+                        "gutter": "16px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "display-xl": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-metric": ["Space Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-caps": ["Space Grotesk"]
+                    },
+                    "fontSize": {
+                        "display-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "data-metric": ["20px", {"lineHeight": "24px", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
+        
+        /* Custom Ring Progress */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md font-body-md antialiased min-h-screen flex flex-col pt-safe pb-safe">
+<!-- TopAppBar -->
+<header class="bg-surface-container-lowest border-b border-surface-container sticky top-0 z-40 w-full">
+<div class="flex justify-between items-center w-full px-5 py-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A close-up portrait of a healthy, focused young professional in an athletic setting, showcasing clear skin and a determined expression. The lighting is bright and clean, emphasizing a modern, tech-forward aesthetic with crisp whites and subtle shadows. The image aligns with a premium health and fitness app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDthhpAKoH78TSOWx54_2-xGXJ5q2dB58dRn6iyglhJvPfgBs0lf3jnIFUqEPBP8I_BxIT4JKWKOSCk7crEAEIaWJTIiM_5mL581MZ9wWvlav-xBdbvV1I-_i1Uwm6jxFRsnBBmkT_HpGKFA7XUDWkNLSO9otBzUVK6uFlD9-8HKh74WYRiYvL_dUDD26dKvFkO4qf2kV-_98f6efQakptEZ1fcODaUqHQS6Zkl9rvG6o2LeZWu2dkHjBLN4y2FFNISYJaQ7S-Hxe0"/>
+</div>
+<h1 class="text-xl font-['Space_Grotesk'] font-bold tracking-tighter text-on-background">LuminAI</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-secondary hover:bg-surface-container transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop py-lg pb-32">
+<!-- Header Section -->
+<div class="mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-unit">Health Insights</h2>
+<p class="font-body-lg text-body-lg text-secondary">Your daily biometric summary</p>
+</div>
+<!-- AI Summary Card (Hero) -->
+<div class="bg-surface-container-lowest border border-surface-container rounded-lg p-lg mb-gutter">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<h3 class="font-label-caps text-label-caps text-secondary mb-unit">AI COACH SUMMARY</h3>
+<p class="font-body-lg text-body-lg text-on-background leading-relaxed">
+                        Your recovery is peaking—perfect time for a high-intensity session. Resting heart rate is down 4bpm from your weekly average, indicating optimal readiness.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-gutter">
+<!-- Recovery & Sleep Ring Card -->
+<div class="bg-surface-container-lowest border border-surface-container rounded-lg p-lg flex flex-col justify-between">
+<div class="flex justify-between items-start mb-md">
+<div>
+<h3 class="font-label-caps text-label-caps text-secondary mb-xs">SLEEP QUALITY</h3>
+<div class="font-data-metric text-display-xl text-on-background">85<span class="text-headline-md text-secondary">%</span></div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="bedtime">bedtime</span>
+</div>
+<div class="flex items-center justify-center py-sm">
+<svg class="w-32 h-32" viewbox="0 0 120 120">
+<!-- Background ring -->
+<circle cx="60" cy="60" fill="none" r="54" stroke="#f3f3f3" stroke-width="8"></circle>
+<!-- Progress ring (85% = 288.4 dasharray, 43.2 offset) -->
+<circle class="progress-ring__circle" cx="60" cy="60" fill="none" r="54" stroke="#0041c8" stroke-dasharray="339.292" stroke-dashoffset="50.89" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+</div>
+<div class="mt-md">
+<div class="flex justify-between text-sm mb-xs">
+<span class="font-body-md text-secondary">Deep Sleep</span>
+<span class="font-data-metric text-on-background">2h 15m</span>
+</div>
+<div class="w-full bg-surface-container-high h-[4px] rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[60%]"></div>
+</div>
+</div>
+</div>
+<!-- Weekly Activity Bar Chart Card -->
+<div class="bg-surface-container-lowest border border-surface-container rounded-lg p-lg flex flex-col">
+<div class="flex justify-between items-start mb-lg">
+<div>
+<h3 class="font-label-caps text-label-caps text-secondary mb-xs">WEEKLY ACTIVITY</h3>
+<div class="font-data-metric text-display-xl text-on-background">4.2<span class="text-headline-md text-secondary">hrs</span></div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="show_chart">show_chart</span>
+</div>
+<!-- Minimal Bar Chart -->
+<div class="flex-grow flex items-end justify-between gap-2 h-40 mt-auto">
+<!-- Day 1 -->
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-high rounded-t-sm h-[30%] group-hover:bg-primary transition-colors"></div>
+<span class="font-label-caps text-label-caps text-secondary text-[10px]">M</span>
+</div>
+<!-- Day 2 -->
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-high rounded-t-sm h-[60%] group-hover:bg-primary transition-colors"></div>
+<span class="font-label-caps text-label-caps text-secondary text-[10px]">T</span>
+</div>
+<!-- Day 3 -->
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-high rounded-t-sm h-[45%] group-hover:bg-primary transition-colors"></div>
+<span class="font-label-caps text-label-caps text-secondary text-[10px]">W</span>
+</div>
+<!-- Day 4 (Today/Active) -->
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-primary rounded-t-sm h-[85%] relative">
+<div class="absolute -top-6 left-1/2 transform -translate-x-1/2 font-data-metric text-[12px] text-primary">85m</div>
+</div>
+<span class="font-label-caps text-label-caps text-primary text-[10px]">T</span>
+</div>
+<!-- Day 5 -->
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-high rounded-t-sm h-[20%] group-hover:bg-primary transition-colors"></div>
+<span class="font-label-caps text-label-caps text-secondary text-[10px]">F</span>
+</div>
+<!-- Day 6 -->
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-high rounded-t-sm h-[5%] group-hover:bg-primary transition-colors"></div>
+<span class="font-label-caps text-label-caps text-secondary text-[10px]">S</span>
+</div>
+<!-- Day 7 -->
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-high rounded-t-sm h-[10%] group-hover:bg-primary transition-colors"></div>
+<span class="font-label-caps text-label-caps text-secondary text-[10px]">S</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Metrics List -->
+<div class="bg-surface-container-lowest border border-surface-container rounded-lg mb-gutter">
+<!-- List Item 1 -->
+<div class="flex items-center justify-between p-md border-b border-surface-container">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</div>
+<div>
+<div class="font-body-md font-body-md text-on-background">Resting Heart Rate</div>
+<div class="font-label-caps text-label-caps text-secondary">BEATS PER MINUTE</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-data-metric text-headline-md text-on-background">52 <span class="text-sm text-secondary">bpm</span></div>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="flex items-center justify-between p-md">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="local_fire_department">local_fire_department</span>
+</div>
+<div>
+<div class="font-body-md font-body-md text-on-background">Active Calories</div>
+<div class="font-label-caps text-label-caps text-secondary">DAILY BURN</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-data-metric text-headline-md text-on-background">640 <span class="text-sm text-secondary">kcal</span></div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe bg-surface-container-lowest border-t border-surface-container md:hidden">
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-secondary pt-2 hover:text-on-background transition-all duration-300 ease-in-out w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="grid_view">grid_view</span>
+<span class="text-[10px] font-['Inter'] uppercase tracking-widest font-bold">Dashboard</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-secondary pt-2 hover:text-on-background transition-all duration-300 ease-in-out w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="smart_toy">smart_toy</span>
+<span class="text-[10px] font-['Inter'] uppercase tracking-widest font-bold whitespace-nowrap">AI Coach</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-secondary pt-2 hover:text-on-background transition-all duration-300 ease-in-out w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="fitness_center">fitness_center</span>
+<span class="text-[10px] font-['Inter'] uppercase tracking-widest font-bold">Workouts</span>
+</a>
+<!-- Active (Insights) -->
+<a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2 w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="monitoring" data-weight="fill" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+<span class="text-[10px] font-['Inter'] uppercase tracking-widest font-bold">Insights</span>
+</a>
+</nav>
+</body></html>
