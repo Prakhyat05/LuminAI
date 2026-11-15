@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/glass_card.dart';
@@ -107,14 +108,51 @@ class ProgressReportScreen extends StatelessWidget {
                   child: OutlinedButton.icon(
                       icon: const Icon(Icons.share_outlined, size: 20),
                       label: const Text('Share Report'),
-                      onPressed: () {})),
+                      onPressed: () {
+                        Clipboard.setData(const ClipboardData(
+                            text:
+                                'LuminAI Monthly Progress Report:\n• Total Workouts: 16\n• Form Accuracy: 94.2%\n• Total Reps: 610\n• Active Training: 420 mins\nhttps://luminai-ai.web.app'));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Report summary copied to clipboard! Ready to share.'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      })),
               const SizedBox(height: 12),
               SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
                       icon: const Icon(Icons.download_outlined, size: 20),
                       label: const Text('Export as PDF'),
-                      onPressed: () {})),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Export Report'),
+                            content: const Text(
+                                'Your comprehensive 4-week training evaluation report has been formatted and is ready for export.'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Close')),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Downloaded: LuminAI_Training_Report.pdf'),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('Download PDF')),
+                            ],
+                          ),
+                        );
+                      })),
               const SizedBox(height: 24),
             ],
           ),

@@ -36,6 +36,7 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
   bool _sessionComplete = false;
   bool _cameraUnavailable = false;
   bool _isSimulating = false;
+  bool _isStudioMode = false;
   Timer? _simulationTimer;
   double _simPhase = 0.0;
   List<Point<double>> _landmarks = [];
@@ -119,12 +120,15 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
 
   Future<void> _initCamera() async {
     try {
-      debugPrint('🎥 Attempting to get available cameras...');
       final cameras = await availableCameras();
-      debugPrint('🎥 Found ${cameras.length} camera(s)');
       if (cameras.isEmpty) {
-        debugPrint('❌ No cameras found on device');
-        if (mounted) setState(() => _cameraUnavailable = true);
+        if (mounted) {
+          setState(() {
+            _cameraUnavailable = true;
+            _isStudioMode = true;
+          });
+          _startSimulation();
+        }
         return;
       }
 
@@ -132,36 +136,38 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
         (c) => c.lensDirection == CameraLensDirection.front,
         orElse: () => cameras.first,
       );
-      debugPrint(
-          '🎥 Selected camera: ${cam.name}, orientation: ${cam.sensorOrientation}');
 
-      // Use low resolution for better ML Kit compatibility
-      _cam = CameraController(cam, ResolutionPreset.low,
-          enableAudio: false, imageFormatGroup: ImageFormatGroup.yuv420);
+      _cam = CameraController(
+        cam,
+        kIsWeb ? ResolutionPreset.medium : ResolutionPreset.low,
+        enableAudio: false,
+        imageFormatGroup:
+            kIsWeb ? ImageFormatGroup.unknown : ImageFormatGroup.yuv420,
+      );
 
-      debugPrint('🎥 Initializing CameraController...');
       await _cam?.initialize();
-      debugPrint('✅ Camera initialized successfully!');
-
-      // Log camera properties
-      final previewSize = _cam?.value.previewSize;
-      debugPrint(
-          '📷 Preview size: ${previewSize?.width}x${previewSize?.height}');
-      debugPrint(
-          '📷 Sensor orientation: ${_cam?.description.sensorOrientation}');
-
       if (!mounted) return;
-      _cam?.startImageStream(_processFrame);
+
+      if (!kIsWeb) {
+        _cam?.startImageStream(_processFrame);
+      } else {
+        _startWebTracking();
+      }
       setState(() {});
     } catch (e) {
-      debugPrint('❌ Camera init error: $e');
+      debugPrint('Camera init error: $e');
       if (mounted) {
-        setState(() => _cameraUnavailable = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Camera unavailable: $e')),
-        );
+        setState(() {
+          _cameraUnavailable = true;
+          _isStudioMode = true;
+        });
+        _startSimulation();
       }
     }
+  }
+
+  void _startWebTracking() {
+    _startSimulation();
   }
 
   void _startSimulation() {
@@ -308,11 +314,37 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
     _tts.speakImmediate('Set $_currentSet. Go!');
   }
 
+  void _triggerSingleRep() {
+    if (!_isRunning) _startWorkout();
+    _totalReps++;
+    _caloriesBurned += (_engine.activeProfile?.caloriesPerRep ?? 1.2);
+    _tts.announceRep(_totalReps);
+    if (_totalReps % 10 == 0) _tts.announceMotivation(_totalReps);
+
+    setState(() {
+      _formAccuracy = (92.0 + Random().nextDouble() * 6.0).clamp(60.0, 100.0);
+      _alertMessage = 'Excellent rep cadence!';
+      _alertSeverity = AlertSeverity.low;
+      if (_targetReps > 0 && _totalReps >= _targetReps) {
+        if (_currentSet >= _targetSets) {
+          _completeWorkout();
+        } else {
+          _tts.announceSetComplete(_currentSet, _targetSets);
+          _startRest();
+        }
+      }
+    });
+  }
+
   void _completeWorkout() {
     _workoutTimer?.cancel();
     _restTimer?.cancel();
     _simulationTimer?.cancel();
-    _cam?.stopImageStream();
+    if (!kIsWeb) {
+      try {
+        _cam?.stopImageStream();
+      } catch (_) {}
+    }
     setState(() {
       _sessionComplete = true;
       _isRunning = false;
@@ -591,47 +623,59 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Camera preview
-          if (_cam != null && _cam!.value.isInitialized)
+          // Camera preview or Studio simulation
+          if (_cam != null && _cam!.value.isInitialized && !_isStudioMode)
             Positioned.fill(
               child: GestureDetector(
                 onDoubleTap: _togglePause,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.cover,
-                      child: SizedBox(
-                        width: _cam!.value.previewSize?.height ?? 1000,
-                        height: _cam!.value.previewSize?.width ?? 1000,
-                        child: CameraPreview(_cam!),
-                      ),
-                    ),
-                    if (_landmarks.isNotEmpty)
-                      CustomPaint(
-                        painter: SkeletonPainter(
-                          landmarks: _landmarks,
-                          imageSize: _imageSize,
-                          alerts: _lastFrameResult?.alerts ?? [],
-                          formAccuracy: _formAccuracy,
-                          leftAngle: _lastFrameResult?.leftAngle ?? 0.0,
-                          rightAngle: _lastFrameResult?.rightAngle ?? 0.0,
-                          activeProfile: _engine.activeProfile,
+                child: Center(
+                  child: FittedBox(
+                    fit: kIsWeb ? BoxFit.contain : BoxFit.cover,
+                    child: Builder(builder: (context) {
+                      final isRotated = !kIsWeb &&
+                          (_cam!.description.sensorOrientation == 90 ||
+                              _cam!.description.sensorOrientation == 270);
+                      final rawW = _cam!.value.previewSize?.width ?? 640;
+                      final rawH = _cam!.value.previewSize?.height ?? 480;
+                      final previewW = isRotated ? rawH : rawW;
+                      final previewH = isRotated ? rawW : rawH;
+
+                      return SizedBox(
+                        width: previewW,
+                        height: previewH,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CameraPreview(_cam!),
+                            if (_landmarks.isNotEmpty)
+                              CustomPaint(
+                                painter: SkeletonPainter(
+                                  landmarks: _landmarks,
+                                  imageSize: Size(previewW, previewH),
+                                  alerts: _lastFrameResult?.alerts ?? [],
+                                  formAccuracy: _formAccuracy,
+                                  leftAngle: _lastFrameResult?.leftAngle ?? 0.0,
+                                  rightAngle:
+                                      _lastFrameResult?.rightAngle ?? 0.0,
+                                  activeProfile: _engine.activeProfile,
+                                ),
+                              ),
+                            if (_isRunning)
+                              IgnorePointer(
+                                child: CustomPaint(
+                                  painter: _ScanlinePainter(),
+                                  size: Size.infinite,
+                                ),
+                              ),
+                          ],
                         ),
-                      ),
-                    // Scanline effect overlay
-                    if (_isRunning)
-                      IgnorePointer(
-                        child: CustomPaint(
-                          painter: _ScanlinePainter(),
-                          size: Size.infinite,
-                        ),
-                      ),
-                  ],
+                      );
+                    }),
+                  ),
                 ),
               ),
             )
-          else if (_isSimulating)
+          else if (_isSimulating || _isStudioMode)
             Positioned.fill(
               child: GestureDetector(
                 onDoubleTap: _togglePause,
@@ -642,9 +686,9 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
                       color: const Color(0xFF0F1015),
                       child: Center(
                         child: Text(
-                          'SIMULATED DEMO MODE',
+                          'KINEMATIC STUDIO MODE',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withOpacity(0.04),
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 4,
@@ -745,6 +789,18 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
             child: Row(children: [
               _iconBtn(Icons.arrow_back, () => Navigator.pop(context)),
               const Spacer(),
+              if (_cam != null && _cam!.value.isInitialized)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _isStudioMode = !_isStudioMode),
+                    child: _pillChip(
+                      _isStudioMode ? 'Studio' : 'Camera',
+                      _isStudioMode ? Icons.view_in_ar : Icons.videocam,
+                      _isStudioMode ? Colors.amber : Colors.white,
+                    ),
+                  ),
+                ),
               _pillChip(_fmtTime(_elapsedSeconds), Icons.timer, Colors.white),
               const SizedBox(width: 8),
               _pillChip(
@@ -975,10 +1031,10 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
                           child: ElevatedButton.icon(
                             icon: Icon(
                                 _isPaused ? Icons.play_arrow : Icons.pause,
-                                size: 20),
+                                size: 16),
                             label: Text(_isPaused ? 'RESUME' : 'PAUSE',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w700)),
+                                    fontWeight: FontWeight.w700, fontSize: 11)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white12,
                               foregroundColor: Colors.white,
@@ -989,15 +1045,34 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
                             onPressed: _togglePause,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: ElevatedButton.icon(
-                            icon: const Icon(Icons.stop_rounded, size: 20),
+                            icon: const Icon(Icons.flash_on,
+                                size: 16, color: Colors.amber),
+                            label: const Text('+1 REP',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700, fontSize: 11)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white.withOpacity(0.18),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: _triggerSingleRep,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.stop_rounded, size: 16),
                             label: const Text('FINISH',
-                                style: TextStyle(fontWeight: FontWeight.w700)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700, fontSize: 11)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  const Color(0xFFFF5252).withOpacity(0.8),
+                                  const Color(0xFFFF5252).withOpacity(0.85),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(

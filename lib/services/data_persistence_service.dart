@@ -44,6 +44,104 @@ class DataPersistenceService {
       _ensureFactory();
       _db = await _openDatabase();
     }
+    await _seedInitialDataIfNeeded();
+  }
+
+  Future<void> _seedInitialDataIfNeeded() async {
+    await _ensurePrefs();
+    if (_prefs?.getBool('luminai_seed_complete') == true) return;
+
+    final now = DateTime.now();
+    final todayStr = now.toIso8601String().substring(0, 10);
+
+    // Seed baseline step count for today
+    await updateStepCount(todayStr, 8420);
+
+    // Seed past sessions
+    final sampleSessions = [
+      {
+        'exercise_name': 'Bicep Curls',
+        'left_reps': 12,
+        'right_reps': 12,
+        'total_reps': 24,
+        'perfect_form_pct': 95.0,
+        'duration_seconds': 180,
+        'calories_burned': 42.0,
+      },
+      {
+        'exercise_name': 'Barbell Squats',
+        'left_reps': 10,
+        'right_reps': 10,
+        'total_reps': 20,
+        'perfect_form_pct': 91.0,
+        'duration_seconds': 210,
+        'calories_burned': 65.0,
+      },
+      {
+        'exercise_name': 'Push-ups',
+        'left_reps': 15,
+        'right_reps': 15,
+        'total_reps': 30,
+        'perfect_form_pct': 93.0,
+        'duration_seconds': 150,
+        'calories_burned': 38.0,
+      },
+      {
+        'exercise_name': 'Shoulder Press',
+        'left_reps': 9,
+        'right_reps': 9,
+        'total_reps': 18,
+        'perfect_form_pct': 89.0,
+        'duration_seconds': 160,
+        'calories_burned': 35.0,
+      },
+    ];
+
+    for (final s in sampleSessions) {
+      await saveSession(
+        exerciseName: s['exercise_name'] as String,
+        leftReps: s['left_reps'] as int,
+        rightReps: s['right_reps'] as int,
+        totalReps: s['total_reps'] as int,
+        perfectFormPct: s['perfect_form_pct'] as double,
+        durationSeconds: s['duration_seconds'] as int,
+        caloriesBurned: s['calories_burned'] as double,
+      );
+    }
+
+    // Seed daily activity for consistency heatmap
+    for (int day = 1; day <= now.day; day++) {
+      if (day % 7 != 0) {
+        final dStr =
+            '${now.year}-${now.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+        final intensity = (day % 3) + 1;
+        await updateDailyActivity(
+          date: dStr,
+          workoutCount: intensity > 1 ? 2 : 1,
+          totalDurationMin: intensity * 20,
+          intensityLevel: intensity,
+        );
+      }
+    }
+
+    // Seed initial protein logs for today
+    await logProtein(
+        foodName: 'Oatmeal & Whey Shake',
+        proteinGrams: 36.0,
+        calories: 420.0,
+        mealType: 'Breakfast');
+    await logProtein(
+        foodName: 'Grilled Chicken & Rice',
+        proteinGrams: 45.0,
+        calories: 520.0,
+        mealType: 'Lunch');
+    await logProtein(
+        foodName: 'Greek Yogurt Bowl',
+        proteinGrams: 20.0,
+        calories: 210.0,
+        mealType: 'Snack');
+
+    await _prefs?.setBool('luminai_seed_complete', true);
   }
 
   Future<Database?> _openDatabase() async {

@@ -353,34 +353,50 @@ class _AIPlanScreenState extends State<AIPlanScreen>
                         const SizedBox(height: 12),
                         ...day.exercises.map((pe) => Padding(
                               padding: const EdgeInsets.only(bottom: 8),
-                              child: Row(
-                                children: [
-                                  Icon(pe.exercise.icon,
-                                      color: AppColors.deepNavy,
-                                      size: 18),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(pe.exercise.name,
-                                        style: AppTypography.bodySm),
+                              child: InkWell(
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  '/live-ai',
+                                  arguments: pe.exercise,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: Row(
+                                    children: [
+                                      Icon(pe.exercise.icon,
+                                          color: AppColors.deepNavy,
+                                          size: 18),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(pe.exercise.name,
+                                            style: AppTypography.bodySm),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        margin:
+                                            const EdgeInsets.only(right: 6),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.deepNavy
+                                              .withOpacity(0.06),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Text(pe.workDescription,
+                                            style: AppTypography.labelSm
+                                                .copyWith(
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                    color:
+                                                        AppColors.deepNavy)),
+                                      ),
+                                      const Icon(Icons.videocam_outlined,
+                                          size: 18, color: AppColors.deepNavy),
+                                    ],
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.deepNavy
-                                          .withOpacity(0.06),
-                                      borderRadius:
-                                          BorderRadius.circular(8),
-                                    ),
-                                    child: Text(pe.workDescription,
-                                        style: AppTypography.labelSm
-                                            .copyWith(
-                                                fontWeight:
-                                                    FontWeight.w600,
-                                                color:
-                                                    AppColors.deepNavy)),
-                                  ),
-                                ],
+                                ),
                               ),
                             )),
                       ],
