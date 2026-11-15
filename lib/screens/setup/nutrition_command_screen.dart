@@ -180,6 +180,7 @@ class _NutritionCommandScreenState extends State<NutritionCommandScreen> {
     setState(() {
       _protein += proteinGrams;
       _calories += cals;
+      _carbs += (cals * 0.45 / 4).round();
       _meals.insert(0, {
         'name': name,
         'time': timeStr,

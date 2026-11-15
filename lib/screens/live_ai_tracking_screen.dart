@@ -52,7 +52,7 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
   // ─── Cache & Timers ────────────────────────────────────────
   FrameResult? _lastFrameResult;
   int _lastRepTimeSeconds = 0;
-  int _intervalSeconds = 30; // Custom interval timer
+  final int _intervalSeconds = 30; // Custom interval timer
 
   // ─── Counters ──────────────────────────────────────────────
   int _totalReps = 0;
@@ -544,49 +544,6 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
       );
     } catch (e) {
       debugPrint('❌ _toInputImage error: $e');
-      return null;
-    }
-  }
-
-  /// Convert YUV420 (3 planes) to NV21 (Y + interleaved VU) format
-  Uint8List? _convertYuv420ToNv21(CameraImage img) {
-    try {
-      final width = img.width;
-      final height = img.height;
-
-      // Y plane size + UV plane size (both halves combined)
-      final ySize = width * height;
-      final uvPlaneSize = (width ~/ 2) * (height ~/ 2);
-
-      final nv21 = Uint8List(ySize + uvPlaneSize * 2);
-
-      // Copy Y plane directly
-      final yPlane = img.planes[0].bytes;
-      nv21.setRange(0, ySize, yPlane);
-
-      // Get U and V planes
-      final uPlane = img.planes[1].bytes;
-      final vPlane = img.planes[2].bytes;
-
-      // NV21 format: Y plane followed by interleaved V, U
-      final uvStart = ySize;
-
-      // Simple copy - just put V first then U
-      // YUV420sp is typically stored as UV interleaved
-      // We need NV21 which is VU interleaved
-      int uvIndex = 0;
-      for (int i = 0; i < uvPlaneSize; i++) {
-        if (i < vPlane.length && i < uPlane.length) {
-          nv21[uvStart + uvIndex++] = vPlane[i]; // V first
-          nv21[uvStart + uvIndex++] = uPlane[i]; // U second
-        }
-      }
-
-      debugPrint(
-          '✅ NV21: ${nv21.length} bytes (Y:$ySize, UV:${uvPlaneSize * 2})');
-      return nv21;
-    } catch (e) {
-      debugPrint('❌ NV21 conversion error: $e');
       return null;
     }
   }

@@ -56,4 +56,5 @@ ios/Runner/GoogleService-Info.plist
 *.local.json
 .firebase/
 *.docx
+docs/
 
