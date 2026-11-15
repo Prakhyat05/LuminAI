@@ -7,7 +7,7 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import '../services/pose_engine.dart';
 import '../services/tts_service.dart';
 import '../services/exercise_tracking_config.dart';
-import '../services/data_persistence_service.dart';
+import '../services/user_state.dart';
 import '../widgets/skeleton_painter.dart';
 import '../models/exercise.dart';
 import '../data/exercise_database.dart';
@@ -34,6 +34,10 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
   bool _isPaused = false;
   bool _isResting = false;
   bool _sessionComplete = false;
+  bool _cameraUnavailable = false;
+  bool _isSimulating = false;
+  Timer? _simulationTimer;
+  double _simPhase = 0.0;
   List<Point<double>> _landmarks = [];
   Size _imageSize = const Size(480, 640);
 
@@ -120,6 +124,7 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
       debugPrint('🎥 Found ${cameras.length} camera(s)');
       if (cameras.isEmpty) {
         debugPrint('❌ No cameras found on device');
+        if (mounted) setState(() => _cameraUnavailable = true);
         return;
       }
 
@@ -151,11 +156,91 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
     } catch (e) {
       debugPrint('❌ Camera init error: $e');
       if (mounted) {
+        setState(() => _cameraUnavailable = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Camera Error: $e')),
+          SnackBar(content: Text('Camera unavailable: $e')),
         );
       }
     }
+  }
+
+  void _startSimulation() {
+    setState(() {
+      _cameraUnavailable = false;
+      _isSimulating = true;
+      _imageSize = const Size(480, 640);
+    });
+    _startWorkout();
+
+    _simulationTimer?.cancel();
+    _simulationTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+      if (!mounted || !_isRunning || _isPaused || _isResting) return;
+      _simPhase += 0.08;
+      if (_simPhase > 2 * pi) _simPhase -= 2 * pi;
+
+      final pts = List<Point<double>>.filled(33, const Point(0, 0));
+      pts[0] = const Point(240, 110);
+      pts[2] = const Point(230, 100);
+      pts[5] = const Point(250, 100);
+      pts[7] = const Point(220, 105);
+      pts[8] = const Point(260, 105);
+
+      pts[11] = const Point(200, 170);
+      pts[12] = const Point(280, 170);
+
+      final curlFactor = (sin(_simPhase) + 1.0) / 2.0;
+      const elbowY = 260.0;
+      pts[13] = const Point(190, elbowY);
+      pts[14] = const Point(290, elbowY);
+
+      final wristY = elbowY - 20.0 + (1.0 - curlFactor) * 80.0;
+      pts[15] = Point(195, wristY);
+      pts[16] = Point(285, wristY);
+
+      pts[23] = const Point(210, 360);
+      pts[24] = const Point(270, 360);
+      pts[25] = const Point(210, 480);
+      pts[26] = const Point(270, 480);
+      pts[27] = const Point(210, 580);
+      pts[28] = const Point(270, 580);
+
+      if (_trackableType != null) {
+        final result = _engine.processFrame(pts);
+        setState(() {
+          _landmarks = pts;
+          _lastFrameResult = result;
+
+          if (_isRunning) {
+            _formAccuracy = result.formAccuracy;
+            _leftReps = result.leftReps;
+            _rightReps = result.rightReps;
+            if (result.repThisFrame) {
+              _totalReps = result.totalReps;
+              _caloriesBurned +=
+                  (_engine.activeProfile?.caloriesPerRep ?? 1.0);
+              _tts.announceRep(_totalReps);
+              if (_totalReps % 10 == 0) _tts.announceMotivation(_totalReps);
+              if (_targetReps > 0 && _totalReps >= _targetReps) {
+                if (_currentSet >= _targetSets) {
+                  _completeWorkout();
+                } else {
+                  _tts.announceSetComplete(_currentSet, _targetSets);
+                  _startRest();
+                }
+              }
+            }
+          }
+          if (result.hasAlerts) {
+            final a = result.alerts.first;
+            _alertMessage = a.message;
+            _alertSeverity = a.severity;
+          } else {
+            _alertMessage = 'Form looks great!';
+            _alertSeverity = AlertSeverity.low;
+          }
+        });
+      }
+    });
   }
 
   void _startWorkout() {
@@ -226,6 +311,7 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
   void _completeWorkout() {
     _workoutTimer?.cancel();
     _restTimer?.cancel();
+    _simulationTimer?.cancel();
     _cam?.stopImageStream();
     setState(() {
       _sessionComplete = true;
@@ -241,8 +327,9 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
 
   Future<void> _saveSession() async {
     try {
-      await DataPersistenceService().initialize();
-      await DataPersistenceService().saveSession(
+      final userState = UserState();
+      await userState.initialize();
+      await userState.saveSession(
         exerciseName: _exercise?.name ?? 'Exercise',
         leftReps: _engine.leftRepCount,
         rightReps: _engine.rightRepCount,
@@ -476,6 +563,7 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
   void dispose() {
     _workoutTimer?.cancel();
     _restTimer?.cancel();
+    _simulationTimer?.cancel();
     _cam?.dispose();
     _detector.close();
     _pulseCtrl.dispose();
@@ -540,6 +628,109 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
                         ),
                       ),
                   ],
+                ),
+              ),
+            )
+          else if (_isSimulating)
+            Positioned.fill(
+              child: GestureDetector(
+                onDoubleTap: _togglePause,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      color: const Color(0xFF0F1015),
+                      child: Center(
+                        child: Text(
+                          'SIMULATED DEMO MODE',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.05),
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_landmarks.isNotEmpty)
+                      CustomPaint(
+                        painter: SkeletonPainter(
+                          landmarks: _landmarks,
+                          imageSize: _imageSize,
+                          alerts: _lastFrameResult?.alerts ?? [],
+                          formAccuracy: _formAccuracy,
+                          leftAngle: _lastFrameResult?.leftAngle ?? 0.0,
+                          rightAngle: _lastFrameResult?.rightAngle ?? 0.0,
+                          activeProfile: _engine.activeProfile,
+                        ),
+                      ),
+                    if (_isRunning)
+                      IgnorePointer(
+                        child: CustomPaint(
+                          painter: _ScanlinePainter(),
+                          size: Size.infinite,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            )
+          else if (_cameraUnavailable)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E2028),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.videocam_off_outlined,
+                          size: 48, color: Colors.amber),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No Live Camera Detected',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'On-device camera was not detected (common on emulators/desktops). You can run a simulated pose tracking session to test live HUD metrics, joint angles, rep counting, and audio cues.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pureWhite,
+                          foregroundColor: AppColors.deepNavy,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
+                        onPressed: _startSimulation,
+                        icon: const Icon(Icons.play_arrow_rounded),
+                        label: const Text('Start Simulated Demo'),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Go Back',
+                          style: TextStyle(color: Colors.white.withOpacity(0.6)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )

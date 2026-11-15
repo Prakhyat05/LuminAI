@@ -138,6 +138,24 @@ class _AuthGatewayScreenState extends State<AuthGatewayScreen> {
     }
   }
 
+  Future<void> _guestSignIn() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await _auth.signInAsGuest();
+    if (result.isSuccess) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } else {
+      setState(() {
+        _loading = false;
+        _error = result.error;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -343,7 +361,24 @@ class _AuthGatewayScreenState extends State<AuthGatewayScreen> {
                   label: const Text('Continue with Google'),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 12),
+
+              // ─── Recruiter / Guest Demo ─────────────────────
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: _loading ? null : _guestSignIn,
+                  icon: const Icon(Icons.bolt, size: 18, color: AppColors.deepNavy),
+                  label: const Text(
+                    'Explore as Guest / Recruiter Demo',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.deepNavy,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
             ],
           ),
         ),

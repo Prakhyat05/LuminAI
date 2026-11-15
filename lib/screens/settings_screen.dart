@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../widgets/glass_card.dart';
 import '../services/auth_service.dart';
+import '../services/tts_service.dart';
 
 /// Screen 25: System Settings — Dynamic profile, dark mode, sign out.
 class SettingsScreen extends StatefulWidget {
@@ -20,6 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _voiceCoach = TTSService().enabled;
     _loadProfile();
   }
 
@@ -84,8 +86,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Text('TRAINING', style: AppTypography.labelCaps),
         const SizedBox(height: 12),
         _toggleRow(Icons.mic_outlined, 'Voice Coach',
-            'TTS rep counting & form alerts', _voiceCoach,
-            (v) => setState(() => _voiceCoach = v)),
+            'TTS rep counting & form alerts', _voiceCoach, (v) {
+          setState(() => _voiceCoach = v);
+          TTSService().setEnabled(v);
+        }),
         const SizedBox(height: 24),
         Text('DATA & SYNC', style: AppTypography.labelCaps),
         const SizedBox(height: 12),
@@ -99,7 +103,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 24),
         Text('ABOUT', style: AppTypography.labelCaps),
         const SizedBox(height: 12),
-        _navRow(Icons.info_outline, 'About LuminAI', 'Version 2.0.0', () {}),
+        _navRow(Icons.info_outline, 'About LuminAI', 'v1.0.0 (Production)', () {
+          showAboutDialog(
+            context: context,
+            applicationName: 'LuminAI',
+            applicationVersion: '1.0.0',
+            applicationIcon: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                image: const DecorationImage(
+                  image: AssetImage('assets/LuminAI.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            children: const [
+              Text(
+                'LuminAI is an elite AI personal trainer featuring on-device real-time pose tracking with Google ML Kit, biomechanical joint angle analysis, Google Gemini generative AI workout planning, and priority-queued audio coaching.',
+              ),
+            ],
+          );
+        }),
         const SizedBox(height: 8),
         _navRow(Icons.privacy_tip_outlined, 'Privacy Policy', '', () {}),
         const SizedBox(height: 8),

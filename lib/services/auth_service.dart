@@ -210,6 +210,28 @@ class AuthService {
     }
   }
 
+  /// 1-Tap Guest / Recruiter Demo login (bypasses OTP/Google login for instant review)
+  Future<AuthResult> signInAsGuest() async {
+    try {
+      await _ensurePrefs();
+      try {
+        final credential = await FirebaseService.signInAnonymously();
+        await _prefs!.setString('user_id', credential.user!.uid);
+      } catch (_) {
+        await _prefs!.setString('user_id', 'demo_recruiter_guest');
+      }
+      await _prefs!.setString('user_name', 'Guest Athlete');
+      await _prefs!.setString('user_email', 'guest@luminai.ai');
+      await _prefs!.setString('auth_method', 'guest');
+      await _prefs!.setString('user_fitness_level', 'Intermediate');
+      await _prefs!.setBool('auth_logged_in', true);
+      await _prefs!.setBool('onboarding_complete', true);
+      return AuthResult.success();
+    } catch (e) {
+      return AuthResult.fail('Guest mode failed: $e');
+    }
+  }
+
   // ─── Sign Out ───────────────────────────────────────────
   Future<void> signOut() async {
     await FirebaseService.signOut();
