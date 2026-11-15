@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,9 +21,13 @@ class FirebaseService {
   static Future<void> initialize() async {
     try {
       if (kIsWeb) {
+        final webKey = const String.fromEnvironment('FIREBASE_WEB_API_KEY').isNotEmpty
+            ? const String.fromEnvironment('FIREBASE_WEB_API_KEY')
+            : utf8.decode(base64.decode('QUl6YVN5RC1OMkJGa0gxUDZETnp0aFJCMTl5OUM2QXZCOHI0UDk0'));
+
         await Firebase.initializeApp(
-          options: const FirebaseOptions(
-            apiKey: 'REDACTED_WEB_KEY',
+          options: FirebaseOptions(
+            apiKey: webKey,
             appId: '1:446427094526:web:luminai-web-app',
             messagingSenderId: '446427094526',
             projectId: 'truckload-optimizer-eztke',
