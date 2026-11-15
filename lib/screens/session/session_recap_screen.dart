@@ -77,8 +77,9 @@ class SessionRecapScreen extends StatelessWidget {
                 SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                        onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                            context, '/home', (_) => false),
+                        onPressed: () {
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                        },
                         child: const Text('Back to Dashboard'))),
                 const SizedBox(height: 12),
                 TextButton(

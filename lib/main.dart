@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 import 'navigation/main_navigation.dart';
+import 'services/firebase_service.dart';
 
 // Onboarding
 import 'screens/onboarding/splash_screen.dart';
@@ -45,7 +46,9 @@ import 'screens/analytics/performance_trends_screen.dart';
 import 'screens/social/team_leaderboard_screen.dart';
 import 'screens/social/faculty_review_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FirebaseService.initialize();
   runApp(const LuminAIApp());
 }
 

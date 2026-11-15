@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../widgets/glass_card.dart';
-import '../../services/ai_plan_service.dart';
+import '../../services/ai_tips_service.dart';
 
 /// AI Tips & Form Corrections screen.
 /// Shows daily tip, exercise form database, and common mistakes.
@@ -50,7 +50,7 @@ class AITipsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dailyTip = AIPlanService.getDailyTip();
+    final dailyTip = AITipsService.getDailyTip();
 
     return Scaffold(
       backgroundColor: AppColors.pureWhite,

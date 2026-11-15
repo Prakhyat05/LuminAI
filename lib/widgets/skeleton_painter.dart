@@ -57,17 +57,29 @@ class SkeletonPainter extends CustomPainter {
 
     // Determine skeleton color based on form accuracy
     final Color skeletonColor;
+    final Color glowColor;
     if (formAccuracy >= 85) {
       skeletonColor = const Color(0xFF00E676); // Green
+      glowColor = const Color(0x4000FF88);
     } else if (formAccuracy >= 60) {
       skeletonColor = const Color(0xFFFFAB00); // Amber
+      glowColor = const Color(0x40FFAB00);
     } else {
       skeletonColor = const Color(0xFFFF5252); // Red
+      glowColor = const Color(0x40FF5252);
     }
 
+    // Glow layer for bones
+    final glowPaint = Paint()
+      ..color = glowColor
+      ..strokeWidth = 12.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
     final bonePaint = Paint()
-      ..color = skeletonColor.withOpacity(0.8)
-      ..strokeWidth = 3.0
+      ..color = skeletonColor.withOpacity(0.85)
+      ..strokeWidth = 3.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -83,6 +95,12 @@ class SkeletonPainter extends CustomPainter {
     final keyJointPaint = Paint()
       ..color = skeletonColor
       ..style = PaintingStyle.fill;
+
+    // Key joint glow
+    final keyJointGlowPaint = Paint()
+      ..color = glowColor
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
     // Alert joint indices (joints with form issues)
     final alertJoints = <int>{};
@@ -124,16 +142,20 @@ class SkeletonPainter extends CustomPainter {
       final p2 = toScreen(landmarks[j]);
 
       // Use alert color if either joint has an issue
+      final Color boneColor;
+      final Color boneGlowColor;
       if (alertJoints.contains(i) || alertJoints.contains(j)) {
-        canvas.drawLine(
-          p1,
-          p2,
-          bonePaint..color = const Color(0xFFFF5252).withOpacity(0.9),
-        );
-        bonePaint.color = skeletonColor.withOpacity(0.8);
+        boneColor = const Color(0xFFFF5252);
+        boneGlowColor = const Color(0x40FF5252);
       } else {
-        canvas.drawLine(p1, p2, bonePaint);
+        boneColor = skeletonColor;
+        boneGlowColor = glowColor;
       }
+
+      // Draw glow first
+      canvas.drawLine(p1, p2, glowPaint..color = boneGlowColor);
+      // Draw main bone
+      canvas.drawLine(p1, p2, bonePaint..color = boneColor.withOpacity(0.85));
     }
 
     // Draw joints
@@ -146,10 +168,13 @@ class SkeletonPainter extends CustomPainter {
       final radius = isKey ? 6.0 : 3.5;
 
       if (isAlert) {
-        // Pulsing red for alert joints
-        canvas.drawCircle(pos, radius + 3, alertPaint..color = const Color(0xFFFF5252).withOpacity(0.3));
+        // Alert with glow
+        canvas.drawCircle(pos, radius + 4, alertPaint..color = const Color(0xFFFF5252).withOpacity(0.25));
+        canvas.drawCircle(pos, radius + 3, alertPaint..color = const Color(0xFFFF5252).withOpacity(0.4));
         canvas.drawCircle(pos, radius, alertPaint..color = const Color(0xFFFF5252));
       } else if (isKey) {
+        // Key joints with glow
+        canvas.drawCircle(pos, radius + 4, keyJointGlowPaint);
         canvas.drawCircle(pos, radius, keyJointPaint);
         canvas.drawCircle(pos, radius, jointOutlinePaint);
       } else {

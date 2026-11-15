@@ -47,5 +47,13 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<!-- Step Counting Permission -->
+		<key>NSMotionUsageDescription</key>
+		<string>LuminAI uses motion data to track your steps and daily activity.</string>
+		<!-- Camera & Microphone for Live AI Pose Tracking & Voice Coach -->
+		<key>NSCameraUsageDescription</key>
+		<string>LuminAI requires camera access for real-time skeletal tracking, pose detection, and form correction.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>LuminAI requires microphone access for hands-free audio coaching and voice feedback.</string>
 	</dict>
 </plist>

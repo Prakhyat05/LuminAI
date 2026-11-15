@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../services/auth_service.dart';
+import '../../services/step_counter_service.dart';
 
 /// Screen 1: Splash Screen
 ///
@@ -40,12 +42,39 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _controller.forward();
 
-    // Navigate after delay
+    // Initialize services and navigate based on auth state
+    _initializeAndNavigate();
+  }
+
+  Future<void> _initializeAndNavigate() async {
+    // Initialize step counter
+    final stepService = StepCounterService();
+    await stepService.initialize();
+
+    // Wait for animation then navigate
     Future.delayed(const Duration(milliseconds: 2800), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/onboarding');
-      }
+      if (!mounted) return;
+      _navigateBasedOnState();
     });
+  }
+
+  Future<void> _navigateBasedOnState() async {
+    final auth = AuthService();
+    final isAuth = await auth.isAuthenticated;
+    final onboardingComplete = await auth.isOnboardingComplete;
+
+    if (!mounted) return;
+
+    if (isAuth && onboardingComplete) {
+      // User is logged in and completed onboarding - go to dashboard
+      Navigator.pushReplacementNamed(context, '/home');
+    } else if (isAuth && !onboardingComplete) {
+      // User logged in but needs to complete profile setup
+      Navigator.pushReplacementNamed(context, '/identity-setup');
+    } else {
+      // New user - show onboarding
+      Navigator.pushReplacementNamed(context, '/onboarding');
+    }
   }
 
   @override

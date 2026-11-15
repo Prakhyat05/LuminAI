@@ -26,6 +26,12 @@ class PoseEngine {
   int _lastLeftRepFrame = 0;
   int _lastRightRepFrame = 0;
 
+  // Track form violations during rep movement
+  bool _leftFormViolatedDuringRep = false;
+  bool _rightFormViolatedDuringRep = false;
+  bool _leftWasInRepMovement = false;
+  bool _rightWasInRepMovement = false;
+
   static const int _debounceFrames = 12; // ~400ms at 30fps
   static const double _hysteresis = 5.0; // 5 degrees of margin
 
@@ -165,6 +171,12 @@ class PoseEngine {
       // ── Form Evaluation ──
       alerts = _evaluateForm(landmarks, profile);
 
+      // Track form violations during rep movement
+      if (alerts.isNotEmpty) {
+        if (_leftWasInRepMovement) _leftFormViolatedDuringRep = true;
+        if (_rightWasInRepMovement) _rightFormViolatedDuringRep = true;
+      }
+
       if (alerts.isEmpty) {
         _goodFormFrames++;
       }
@@ -193,26 +205,38 @@ class PoseEngine {
       // Left
       if (_currentLeftAngle > profile.phaseAThreshold + _hysteresis) {
         _leftPhase = RepPhase.phaseA;
+        _leftWasInRepMovement = true;
       }
       if (_leftPhase == RepPhase.phaseA &&
           _currentLeftAngle < profile.phaseBThreshold - _hysteresis) {
         if (_totalFrames - _lastLeftRepFrame > _debounceFrames) {
-          _leftRepCount++;
+          // Only count rep if form was good during the movement
+          if (!_leftFormViolatedDuringRep) {
+            _leftRepCount++;
+            repThisFrame = true;
+          }
           _leftPhase = RepPhase.idle;
-          repThisFrame = true;
+          _leftFormViolatedDuringRep = false;
+          _leftWasInRepMovement = false;
           _lastLeftRepFrame = _totalFrames;
         }
       }
       // Right
       if (_currentRightAngle > profile.phaseAThreshold + _hysteresis) {
         _rightPhase = RepPhase.phaseA;
+        _rightWasInRepMovement = true;
       }
       if (_rightPhase == RepPhase.phaseA &&
           _currentRightAngle < profile.phaseBThreshold - _hysteresis) {
         if (_totalFrames - _lastRightRepFrame > _debounceFrames) {
-          _rightRepCount++;
+          // Only count rep if form was good during the movement
+          if (!_rightFormViolatedDuringRep) {
+            _rightRepCount++;
+            repThisFrame = true;
+          }
           _rightPhase = RepPhase.idle;
-          repThisFrame = true;
+          _rightFormViolatedDuringRep = false;
+          _rightWasInRepMovement = false;
           _lastRightRepFrame = _totalFrames;
         }
       }
@@ -221,26 +245,36 @@ class PoseEngine {
       // Left
       if (_currentLeftAngle < profile.phaseBThreshold - _hysteresis) {
         _leftPhase = RepPhase.phaseB;
+        _leftWasInRepMovement = true;
       }
       if (_leftPhase == RepPhase.phaseB &&
           _currentLeftAngle > profile.phaseAThreshold + _hysteresis) {
         if (_totalFrames - _lastLeftRepFrame > _debounceFrames) {
-          _leftRepCount++;
+          if (!_leftFormViolatedDuringRep) {
+            _leftRepCount++;
+            repThisFrame = true;
+          }
           _leftPhase = RepPhase.idle;
-          repThisFrame = true;
+          _leftFormViolatedDuringRep = false;
+          _leftWasInRepMovement = false;
           _lastLeftRepFrame = _totalFrames;
         }
       }
       // Right
       if (_currentRightAngle < profile.phaseBThreshold - _hysteresis) {
         _rightPhase = RepPhase.phaseB;
+        _rightWasInRepMovement = true;
       }
       if (_rightPhase == RepPhase.phaseB &&
           _currentRightAngle > profile.phaseAThreshold + _hysteresis) {
         if (_totalFrames - _lastRightRepFrame > _debounceFrames) {
-          _rightRepCount++;
+          if (!_rightFormViolatedDuringRep) {
+            _rightRepCount++;
+            repThisFrame = true;
+          }
           _rightPhase = RepPhase.idle;
-          repThisFrame = true;
+          _rightFormViolatedDuringRep = false;
+          _rightWasInRepMovement = false;
           _lastRightRepFrame = _totalFrames;
         }
       }
@@ -330,6 +364,10 @@ class PoseEngine {
     _isInHoldPosition = false;
     _lastLeftRepFrame = 0;
     _lastRightRepFrame = 0;
+    _leftFormViolatedDuringRep = false;
+    _rightFormViolatedDuringRep = false;
+    _leftWasInRepMovement = false;
+    _rightWasInRepMovement = false;
   }
 }
 

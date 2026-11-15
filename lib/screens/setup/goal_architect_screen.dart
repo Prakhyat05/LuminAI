@@ -4,6 +4,7 @@ import '../../theme/app_typography.dart';
 import '../../widgets/glass_card.dart';
 import '../../models/exercise.dart';
 import '../../services/auth_service.dart';
+import '../../services/data_persistence_service.dart';
 
 /// Screen 9: Goal Architect — Primary goal + step targets + intensity
 class GoalArchitectScreen extends StatefulWidget {
@@ -20,6 +21,11 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
   final _auth = AuthService();
 
   Future<void> _startTraining() async {
+    // Save step goal locally
+    final data = DataPersistenceService();
+    await data.saveStepGoal(_stepGoal.toInt());
+
+    // Update auth profile and mark onboarding complete
     await _auth.updateProfile(goal: _primaryGoal.name);
     await _auth.completeOnboarding();
     if (mounted) Navigator.pushReplacementNamed(context, '/home');
@@ -27,6 +33,10 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth > 400 ? 24.0 : 16.0;
+    final itemSpacing = screenWidth > 400 ? 8.0 : 6.0;
+
     return Scaffold(
       backgroundColor: AppColors.pureWhite,
       appBar: AppBar(
@@ -36,7 +46,7 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
           title: const Text('Goal Architect')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -57,10 +67,10 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
     
               // Primary Goal
               Text('PRIMARY GOAL', style: AppTypography.labelCaps),
-              const SizedBox(height: 12),
+              SizedBox(height: itemSpacing + 6),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: itemSpacing,
+                runSpacing: itemSpacing,
                 children: FitnessGoal.values.map((goal) {
                   final selected = goal == _primaryGoal;
                   return GestureDetector(
@@ -174,11 +184,12 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
                     children: List.generate(7, (i) {
                       final n = i + 1;
                       final active = n == _workoutsPerWeek;
+                      final buttonSize = screenWidth > 350 ? 40.0 : 32.0;
                       return GestureDetector(
                         onTap: () => setState(() => _workoutsPerWeek = n),
                         child: Container(
-                            width: 40,
-                            height: 40,
+                            width: buttonSize,
+                            height: buttonSize,
                             decoration: BoxDecoration(
                                 color: active
                                     ? AppColors.deepNavy
@@ -203,7 +214,7 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
     
               // Intensity
               Text('TRAINING INTENSITY', style: AppTypography.labelCaps),
-              const SizedBox(height: 12),
+              SizedBox(height: itemSpacing + 6),
               Row(
                 children: ['Low', 'Medium', 'High', 'Extreme'].map((l) {
                   final active = l == _intensity;
@@ -211,8 +222,8 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
                     child: GestureDetector(
                       onTap: () => setState(() => _intensity = l),
                       child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          margin: EdgeInsets.only(right: 4),
+                          padding: EdgeInsets.symmetric(vertical: screenWidth > 360 ? 12 : 8),
                           decoration: BoxDecoration(
                               color: active
                                   ? AppColors.deepNavy
@@ -225,6 +236,7 @@ class _GoalArchitectScreenState extends State<GoalArchitectScreen> {
                           child: Center(
                               child: Text(l,
                                   style: AppTypography.labelSm.copyWith(
+                                      fontSize: screenWidth > 360 ? 11 : 9,
                                       color: active
                                           ? AppColors.pureWhite
                                           : AppColors.textSecondary,

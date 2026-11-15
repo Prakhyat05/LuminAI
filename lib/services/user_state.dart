@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
 import 'data_persistence_service.dart';
+import 'firebase_service.dart';
 import '../models/exercise.dart';
 import 'ai_plan_service.dart';
 
@@ -168,6 +169,7 @@ class UserState extends ChangeNotifier {
     required int durationSeconds,
     required double caloriesBurned,
   }) async {
+    // Save to local database
     await _data.saveSession(
       exerciseName: exerciseName,
       leftReps: leftReps,
@@ -177,6 +179,19 @@ class UserState extends ChangeNotifier {
       durationSeconds: durationSeconds,
       caloriesBurned: caloriesBurned,
     );
+
+    // Save to Firebase
+    await FirebaseService.recordWorkout(
+      exerciseName: exerciseName,
+      leftReps: leftReps,
+      rightReps: rightReps,
+      totalReps: totalReps,
+      formAccuracy: perfectFormPct,
+      durationSeconds: durationSeconds,
+      caloriesBurned: caloriesBurned,
+      setsCompleted: 1,
+    );
+
     // Update daily activity
     final today = DateTime.now().toIso8601String().substring(0, 10);
     await _data.updateDailyActivity(

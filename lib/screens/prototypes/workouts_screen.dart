@@ -12,7 +12,7 @@ class WorkoutsScreen extends StatelessWidget {
         leading: IconButton(
           icon:
               Icon(Icons.arrow_back, color: theme.colorScheme.onSurfaceVariant),
-          onPressed: () {},
+          onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'LuminAI',

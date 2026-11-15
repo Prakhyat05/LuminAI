@@ -10,6 +10,7 @@ import '../services/exercise_tracking_config.dart';
 import '../services/data_persistence_service.dart';
 import '../widgets/skeleton_painter.dart';
 import '../models/exercise.dart';
+import '../data/exercise_database.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -39,7 +40,7 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
   Exercise? _exercise;
   TrackableExercise? _trackableType;
   int _targetSets = 3;
-  int _targetReps = 12;
+  int _targetReps = 24;
   int _restSeconds = 60;
   int _currentSet = 1;
 
@@ -50,6 +51,8 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
 
   // ─── Counters ──────────────────────────────────────────────
   int _totalReps = 0;
+  int _leftReps = 0;
+  int _rightReps = 0;
   double _formAccuracy = 100.0;
   String _alertMessage = 'Position yourself in frame';
   AlertSeverity _alertSeverity = AlertSeverity.low;
@@ -96,6 +99,16 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
           if (_trackableType != null) _engine.setExercise(_trackableType!);
         }
       }
+
+      // Fallback default if launched directly without arguments
+      if (_exercise == null && ExerciseDatabase.all.isNotEmpty) {
+        _exercise = ExerciseDatabase.all.first;
+        _trackableType = ExerciseTrackingRegistry.mapExerciseId(_exercise!.id);
+        if (_trackableType != null) {
+          _engine.setExercise(_trackableType!);
+        }
+      }
+
       _initCamera();
     }
   }
@@ -114,17 +127,23 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
         (c) => c.lensDirection == CameraLensDirection.front,
         orElse: () => cameras.first,
       );
-      debugPrint('🎥 Selected camera: ${cam.name}');
+      debugPrint(
+          '🎥 Selected camera: ${cam.name}, orientation: ${cam.sensorOrientation}');
 
-      _cam = CameraController(cam, ResolutionPreset.medium,
-          enableAudio: false,
-          imageFormatGroup: defaultTargetPlatform == TargetPlatform.iOS
-              ? ImageFormatGroup.bgra8888
-              : ImageFormatGroup.yuv420);
+      // Use low resolution for better ML Kit compatibility
+      _cam = CameraController(cam, ResolutionPreset.low,
+          enableAudio: false, imageFormatGroup: ImageFormatGroup.yuv420);
 
       debugPrint('🎥 Initializing CameraController...');
       await _cam?.initialize();
       debugPrint('✅ Camera initialized successfully!');
+
+      // Log camera properties
+      final previewSize = _cam?.value.previewSize;
+      debugPrint(
+          '📷 Preview size: ${previewSize?.width}x${previewSize?.height}');
+      debugPrint(
+          '📷 Sensor orientation: ${_cam?.description.sensorOrientation}');
 
       if (!mounted) return;
       _cam?.startImageStream(_processFrame);
@@ -198,6 +217,8 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
       _isResting = false;
       _currentSet++;
       _totalReps = 0;
+      _leftReps = 0;
+      _rightReps = 0;
     });
     _tts.speakImmediate('Set $_currentSet. Go!');
   }
@@ -239,12 +260,20 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
     if (_isBusy || _isPaused || _isResting) return;
     _isBusy = true;
     try {
+      // Check image properties
+      debugPrint(
+          '📷 Frame: ${image.width}x${image.height}, format: ${image.format.raw}, planes: ${image.planes.length}');
+
       final input = _toInputImage(image);
       if (input == null) {
+        debugPrint('❌ _toInputImage returned null');
         _isBusy = false;
         return;
       }
+
+      debugPrint('✅ InputImage created, processing...');
       final poses = await _detector.processImage(input);
+      debugPrint('🔍 Detected ${poses.length} pose(s)');
       if (poses.isNotEmpty && mounted) {
         final pose = poses.first;
         final map = <int, Point<double>>{};
@@ -252,7 +281,7 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
           map[lm.type.index] = Point(lm.x, lm.y);
         }
         final pts = List.generate(33, (i) => map[i] ?? const Point(0, 0));
-        
+
         final rotRaw = _cam?.description.sensorOrientation ?? 0;
         final isRotated = rotRaw == 90 || rotRaw == 270;
         final imgW = image.width.toDouble();
@@ -264,12 +293,15 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
           setState(() {
             _landmarks = pts;
             _lastFrameResult = result;
-            
+
             if (_isRunning) {
               _formAccuracy = result.formAccuracy;
+              _leftReps = result.leftReps;
+              _rightReps = result.rightReps;
               if (result.repThisFrame) {
                 _totalReps = result.totalReps;
-                _caloriesBurned += (_engine.activeProfile?.caloriesPerRep ?? 1.0);
+                _caloriesBurned +=
+                    (_engine.activeProfile?.caloriesPerRep ?? 1.0);
                 _tts.announceRep(_totalReps);
 
                 // Rep speed feedback
@@ -318,19 +350,126 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
 
   InputImage? _toInputImage(CameraImage img) {
     if (_cam == null) return null;
-    final rot = InputImageRotationValue.fromRawValue(
-        _cam!.description.sensorOrientation);
-    final fmt = InputImageFormatValue.fromRawValue(img.format.raw);
-    if (rot == null || fmt == null || img.planes.isEmpty) return null;
-    return InputImage.fromBytes(
-      bytes: img.planes.first.bytes,
-      metadata: InputImageMetadata(
-        size: Size(img.width.toDouble(), img.height.toDouble()),
-        rotation: rot,
-        format: fmt,
-        bytesPerRow: img.planes.first.bytesPerRow,
-      ),
-    );
+
+    try {
+      final sensorOrientation = _cam!.description.sensorOrientation;
+      final rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+
+      if (rotation == null) {
+        debugPrint('❌ Could not determine rotation from: $sensorOrientation');
+        return null;
+      }
+
+      // For YUV420, combine all planes into NV21 format
+      if (img.format.group == ImageFormatGroup.yuv420 &&
+          img.planes.length == 3) {
+        final width = img.width;
+        final height = img.height;
+
+        // Calculate total size needed
+        final yRowStride = img.planes[0].bytesPerRow;
+        final ySize = yRowStride * height;
+        final uvRowStride = img.planes[1].bytesPerRow;
+        final uvHeight = (height / 2).ceil();
+        final uvSize = uvRowStride * uvHeight * 2;
+
+        // Create combined buffer
+        final allBytes = Uint8List(ySize + uvSize);
+
+        // Copy Y plane
+        allBytes.setRange(0, ySize, img.planes[0].bytes);
+
+        // Copy U and V planes - swap to NV21 format (VU instead of UV)
+        final uvStart = ySize;
+        final uPlane = img.planes[1].bytes;
+        final vPlane = img.planes[2].bytes;
+
+        for (int y = 0; y < uvHeight; y++) {
+          for (int x = 0; x < width ~/ 2; x++) {
+            final srcIdx = y * uvRowStride + x;
+            final dstIdx = uvStart + y * width + x * 2;
+
+            if (srcIdx < uPlane.length && srcIdx < vPlane.length) {
+              allBytes[dstIdx] = vPlane[srcIdx]; // V first
+              allBytes[dstIdx + 1] = uPlane[srcIdx]; // U second
+            }
+          }
+        }
+
+        debugPrint(
+            '📸 NV21: ${allBytes.length} bytes, ${img.width}x${img.height}');
+
+        return InputImage.fromBytes(
+          bytes: allBytes,
+          metadata: InputImageMetadata(
+            size: Size(img.width.toDouble(), img.height.toDouble()),
+            rotation: rotation,
+            format: InputImageFormat.nv21,
+            bytesPerRow: img.width,
+          ),
+        );
+      }
+
+      // Default handling for other formats
+      final format = InputImageFormatValue.fromRawValue(img.format.raw) ??
+          InputImageFormat.yuv_420_888;
+
+      return InputImage.fromBytes(
+        bytes: img.planes[0].bytes,
+        metadata: InputImageMetadata(
+          size: Size(img.width.toDouble(), img.height.toDouble()),
+          rotation: rotation,
+          format: format,
+          bytesPerRow: img.planes[0].bytesPerRow,
+        ),
+      );
+    } catch (e) {
+      debugPrint('❌ _toInputImage error: $e');
+      return null;
+    }
+  }
+
+  /// Convert YUV420 (3 planes) to NV21 (Y + interleaved VU) format
+  Uint8List? _convertYuv420ToNv21(CameraImage img) {
+    try {
+      final width = img.width;
+      final height = img.height;
+
+      // Y plane size + UV plane size (both halves combined)
+      final ySize = width * height;
+      final uvPlaneSize = (width ~/ 2) * (height ~/ 2);
+
+      final nv21 = Uint8List(ySize + uvPlaneSize * 2);
+
+      // Copy Y plane directly
+      final yPlane = img.planes[0].bytes;
+      nv21.setRange(0, ySize, yPlane);
+
+      // Get U and V planes
+      final uPlane = img.planes[1].bytes;
+      final vPlane = img.planes[2].bytes;
+
+      // NV21 format: Y plane followed by interleaved V, U
+      final uvStart = ySize;
+
+      // Simple copy - just put V first then U
+      // YUV420sp is typically stored as UV interleaved
+      // We need NV21 which is VU interleaved
+      int uvIndex = 0;
+      for (int i = 0; i < uvPlaneSize; i++) {
+        if (i < vPlane.length && i < uPlane.length) {
+          nv21[uvStart + uvIndex++] = vPlane[i]; // V first
+          nv21[uvStart + uvIndex++] = uPlane[i]; // U second
+        }
+      }
+
+      debugPrint(
+          '✅ NV21: ${nv21.length} bytes (Y:$ySize, UV:${uvPlaneSize * 2})');
+      return nv21;
+    } catch (e) {
+      debugPrint('❌ NV21 conversion error: $e');
+      return null;
+    }
   }
 
   @override
@@ -361,45 +500,55 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(fit: StackFit.expand, children: [
-        // Camera preview
-        if (_cam != null && _cam!.value.isInitialized)
-          Positioned.fill(
-            child: GestureDetector(
-              onDoubleTap: _togglePause,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _cam!.value.previewSize?.height ?? 1000,
-                      height: _cam!.value.previewSize?.width ?? 1000,
-                      child: CameraPreview(_cam!),
-                    ),
-                  ),
-                  if (_landmarks.isNotEmpty)
-                    CustomPaint(
-                      painter: SkeletonPainter(
-                        landmarks: _landmarks,
-                        imageSize: _imageSize,
-                        alerts: _lastFrameResult?.alerts ?? [],
-                        formAccuracy: _formAccuracy,
-                        leftAngle: _lastFrameResult?.leftAngle ?? 0.0,
-                        rightAngle: _lastFrameResult?.rightAngle ?? 0.0,
-                        activeProfile: _engine.activeProfile,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Camera preview
+          if (_cam != null && _cam!.value.isInitialized)
+            Positioned.fill(
+              child: GestureDetector(
+                onDoubleTap: _togglePause,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _cam!.value.previewSize?.height ?? 1000,
+                        height: _cam!.value.previewSize?.width ?? 1000,
+                        child: CameraPreview(_cam!),
                       ),
                     ),
-                ],
+                    if (_landmarks.isNotEmpty)
+                      CustomPaint(
+                        painter: SkeletonPainter(
+                          landmarks: _landmarks,
+                          imageSize: _imageSize,
+                          alerts: _lastFrameResult?.alerts ?? [],
+                          formAccuracy: _formAccuracy,
+                          leftAngle: _lastFrameResult?.leftAngle ?? 0.0,
+                          rightAngle: _lastFrameResult?.rightAngle ?? 0.0,
+                          activeProfile: _engine.activeProfile,
+                        ),
+                      ),
+                    // Scanline effect overlay
+                    if (_isRunning)
+                      IgnorePointer(
+                        child: CustomPaint(
+                          painter: _ScanlinePainter(),
+                          size: Size.infinite,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          )
-        else
-          const Center(child: CircularProgressIndicator(color: Colors.white)),
+            )
+          else
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
 
           // Top bar
           Positioned(
-            top: 8,
+            top: MediaQuery.of(context).padding.top + 16,
             left: 12,
             right: 12,
             child: Row(children: [
@@ -416,6 +565,58 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
               ),
             ]),
           ),
+
+          // Total reps badge (center top)
+          if (_totalReps > 0)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 70,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'TOTAL $_totalReps REPS',
+                    style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 10,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // Left arm panel (per-arm HUD)
+          if (_landmarks.isNotEmpty)
+            Positioned(
+              left: 4,
+              top: MediaQuery.of(context).size.height * 0.35,
+              child: _buildArmPanel(
+                label: 'LEFT',
+                reps: _leftReps,
+                angle: _lastFrameResult?.leftAngle ?? 0,
+                isAlert: _alertSeverity != AlertSeverity.low,
+              ),
+            ),
+
+          // Right arm panel (per-arm HUD)
+          if (_landmarks.isNotEmpty)
+            Positioned(
+              right: 4,
+              top: MediaQuery.of(context).size.height * 0.35,
+              child: _buildArmPanel(
+                label: 'RIGHT',
+                reps: _rightReps,
+                angle: _lastFrameResult?.rightAngle ?? 0,
+                isAlert: _alertSeverity != AlertSeverity.low,
+              ),
+            ),
 
           // Rest overlay
           if (_isResting) _buildRestOverlay(),
@@ -615,10 +816,10 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
                           ),
                         ),
                       ]), // Row
-                    ]), // Column
-                  ), // Container
-                ]), // Column
-              ), // Positioned
+                  ]), // Column
+                ), // Container
+              ]), // Column
+            ), // Positioned
         ], // Stack children
       ), // Stack body
     ); // Scaffold
@@ -774,4 +975,110 @@ class _LiveAITrackingScreenState extends State<LiveAITrackingScreen>
                   color: color, fontSize: 12, fontWeight: FontWeight.w600)),
         ]),
       );
+
+  /// Per-arm HUD panel (like the HTML version)
+  Widget _buildArmPanel({
+    required String label,
+    required int reps,
+    required double angle,
+    required bool isAlert,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final panelWidth = screenWidth < 380 ? 56.0 : 68.0;
+    final fontSize = screenWidth < 380 ? 36.0 : 44.0;
+    final progressHeight = screenWidth < 380 ? 80.0 : 120.0;
+
+    final panelColor =
+        isAlert ? const Color(0xFFFF5252) : const Color(0xFF00FF88);
+
+    // Calculate progress based on angle (for bicep curl: 180° = 0%, 45° = 100%)
+    double progress = 0;
+    if (angle > 0) {
+      progress = ((180 - angle) / 135 * 100).clamp(0, 100);
+    }
+
+    return Container(
+      width: panelWidth,
+      padding: EdgeInsets.symmetric(horizontal: screenWidth < 380 ? 4 : 8, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.75),
+        borderRadius: label == 'LEFT'
+            ? const BorderRadius.only(
+                topRight: Radius.circular(12), bottomRight: Radius.circular(12))
+            : const BorderRadius.only(
+                topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+        border: Border.all(color: panelColor.withOpacity(0.25)),
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(label,
+            style: const TextStyle(
+                color: Colors.white38, fontSize: 8, letterSpacing: 3)),
+        const SizedBox(height: 8),
+        Text('$reps',
+            style: TextStyle(
+                color: panelColor,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w900,
+                shadows: [
+                  Shadow(color: panelColor.withOpacity(0.4), blurRadius: 16)
+                ])),
+        const Text('REPS',
+            style: TextStyle(
+                color: Colors.white38, fontSize: 8, letterSpacing: 2)),
+        const SizedBox(height: 8),
+        // Progress bar
+        Container(
+          width: 10,
+          height: progressHeight,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(color: Colors.white.withOpacity(0.06)),
+          ),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 80),
+                width: 10,
+                height: progress * 1.2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isAlert
+                        ? [const Color(0xFFFF2244), const Color(0xFFFF8800)]
+                        : [const Color(0xFF00FF88), const Color(0xFF00CCFF)],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text('${angle.round()}°',
+            style: const TextStyle(
+                color: Colors.white38, fontSize: 10, letterSpacing: 1)),
+      ]),
+    );
+  }
+}
+
+/// Scanline effect painter for the HUD aesthetic
+class _ScanlinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black.withOpacity(0.03)
+      ..strokeWidth = 1;
+
+    // Draw horizontal scanlines
+    for (double y = 0; y < size.height; y += 4) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

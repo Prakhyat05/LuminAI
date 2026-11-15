@@ -32,6 +32,59 @@ class _AuthGatewayScreenState extends State<AuthGatewayScreen> {
     super.dispose();
   }
 
+  void _showForgotPasswordDialog() {
+    final emailController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter your email address and we\'ll send you a link to reset your password.'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                hintText: 'your@email.com',
+                prefixIcon: Icon(Icons.email_outlined, size: 20),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (emailController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter your email')),
+                );
+                return;
+              }
+              final result = await _auth.sendPasswordResetEmail(emailController.text.trim());
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result.isSuccess
+                        ? 'Password reset email sent!'
+                        : result.error ?? 'Failed to send reset email'),
+                  ),
+                );
+              }
+            },
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _submitEmail() async {
     setState(() {
       _loading = true;
@@ -46,7 +99,14 @@ class _AuthGatewayScreenState extends State<AuthGatewayScreen> {
           _passwordController.text, _nameController.text.trim());
     }
     if (result.isSuccess) {
-      if (mounted) Navigator.pushReplacementNamed(context, '/identity-setup');
+      final onboardingComplete = await _auth.isOnboardingComplete;
+      if (mounted) {
+        if (onboardingComplete) {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          Navigator.pushReplacementNamed(context, '/identity-setup');
+        }
+      }
     } else {
       setState(() {
         _loading = false;
@@ -62,7 +122,14 @@ class _AuthGatewayScreenState extends State<AuthGatewayScreen> {
     });
     final result = await _auth.signInWithGoogle();
     if (result.isSuccess) {
-      if (mounted) Navigator.pushReplacementNamed(context, '/identity-setup');
+      final onboardingComplete = await _auth.isOnboardingComplete;
+      if (mounted) {
+        if (onboardingComplete) {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          Navigator.pushReplacementNamed(context, '/identity-setup');
+        }
+      }
     } else {
       setState(() {
         _loading = false;
@@ -73,16 +140,19 @@ class _AuthGatewayScreenState extends State<AuthGatewayScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth > 400 ? 32.0 : 20.0;
+    final topPadding = screenWidth > 400 ? 60.0 : 40.0;
+
     return Scaffold(
       backgroundColor: AppColors.pureWhite,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 60),
-
+              SizedBox(height: topPadding),
               // ─── Logo ──────────────────────────────────────
               Container(
                 width: 56,
@@ -185,7 +255,7 @@ class _AuthGatewayScreenState extends State<AuthGatewayScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: _showForgotPasswordDialog,
                     child: Text('Forgot Password?',
                         style: AppTypography.bodySm.copyWith(
                           color: AppColors.deepNavy,

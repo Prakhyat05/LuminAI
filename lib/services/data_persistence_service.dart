@@ -21,16 +21,24 @@ class DataPersistenceService {
 
   // ─── Initialization ────────────────────────────────────────
 
-  Future<void> initialize() async {
-    if (Platform.isWindows || Platform.isLinux) {
+  static void _ensureFactory() {
+    if (Platform.isWindows ||
+        Platform.isLinux ||
+        Platform.isMacOS ||
+        Platform.environment.containsKey('FLUTTER_TEST')) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
+  }
+
+  Future<void> initialize() async {
+    _ensureFactory();
     _prefs = await SharedPreferences.getInstance();
     _db = await _openDatabase();
   }
 
   Future<Database> _openDatabase() async {
+    _ensureFactory();
     final dbPath = await getDatabasesPath();
     final path = p.join(dbPath, 'luminai.db');
 

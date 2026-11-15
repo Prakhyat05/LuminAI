@@ -14,12 +14,15 @@ class OnboardingSkeletalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth > 400 ? 32.0 : 20.0;
+
     return Scaffold(
       backgroundColor: AppColors.pureWhite,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Column(
               children: [
                 const SizedBox(height: 24),

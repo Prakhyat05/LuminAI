@@ -27,6 +27,21 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen>
   int _resendCountdown = 0;
   Timer? _resendTimer;
 
+  // Country codes for phone authentication
+  String _selectedCountryCode = '+91';
+  final List<Map<String, String>> _countryCodes = [
+    {'code': '+1', 'name': 'US/Canada'},
+    {'code': '+44', 'name': 'UK'},
+    {'code': '+91', 'name': 'India'},
+    {'code': '+86', 'name': 'China'},
+    {'code': '+81', 'name': 'Japan'},
+    {'code': '+49', 'name': 'Germany'},
+    {'code': '+33', 'name': 'France'},
+    {'code': '+61', 'name': 'Australia'},
+    {'code': '+55', 'name': 'Brazil'},
+    {'code': '+971', 'name': 'UAE'},
+  ];
+
   late AnimationController _animController;
   late Animation<double> _scaleAnim;
 
@@ -65,17 +80,30 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen>
     });
   }
 
+  String _formatPhoneNumber(String phone) {
+    // Remove all non-digit characters
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+
+    // Combine selected country code with phone number
+    final countryCode = _selectedCountryCode.replaceAll('+', '');
+    return '+$countryCode$digits';
+  }
+
   Future<void> _sendOtp() async {
     final phone = _phoneController.text.trim();
     if (phone.length < 10) {
       setState(() => _error = 'Enter a valid phone number');
       return;
     }
+
+    // Format phone number to E.164 format
+    final formattedPhone = _formatPhoneNumber(phone);
+
     setState(() {
       _error = null;
       _verifying = true;
     });
-    final result = await _auth.sendPhoneOTP(phone);
+    final result = await _auth.sendPhoneOTP(formattedPhone);
     setState(() {
       _verifying = false;
       if (result.isSuccess) {
@@ -100,7 +128,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen>
       _verifying = true;
     });
     final result =
-        await _auth.verifyPhoneOTP(code, _phoneController.text.trim());
+        await _auth.verifyPhoneOTP(code);
     if (result.isSuccess) {
       if (mounted) Navigator.pushReplacementNamed(context, '/identity-setup');
     } else {
@@ -166,14 +194,30 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen>
           children: [
             Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.outlineVariant),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Text('+91',
-                  style: AppTypography.bodyMd
-                      .copyWith(fontWeight: FontWeight.w600)),
+              child: DropdownButton<String>(
+                value: _selectedCountryCode,
+                underline: const SizedBox(),
+                isDense: true,
+                items: _countryCodes.map((c) {
+                  return DropdownMenuItem(
+                    value: c['code'],
+                    child: Text(
+                      '${c['code']} (${c['name']})',
+                      style: AppTypography.bodySm,
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedCountryCode = value);
+                  }
+                },
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -182,7 +226,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen>
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10)
+                  LengthLimitingTextInputFormatter(12)
                 ],
                 decoration: const InputDecoration(
                   hintText: '9876543210',

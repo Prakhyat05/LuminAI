@@ -43,12 +43,14 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth > 400 ? 24.0 : 16.0;
     final exercises = _filteredExercises;
     return Scaffold(
       backgroundColor: AppColors.pureWhite,
       appBar: AppBar(title: const Text('Exercise Library')),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

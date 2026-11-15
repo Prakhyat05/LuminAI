@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'ai_config.dart';
 import '../models/exercise.dart';
 import '../data/exercise_database.dart';
 
@@ -23,14 +24,16 @@ class AIPlanService {
       weightKg: weightKg,
     );
 
-    const apiKey = String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
-    if (apiKey.isEmpty) {
-      debugPrint('No GEMINI_API_KEY found. Using local AI plan generation.');
+    if (!AIConfig.useGeminiApi) {
+      debugPrint('No GEMINI_API_KEY configured. Using local AI plan generation.');
       return basePlan;
     }
 
     try {
-      final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+      final model = GenerativeModel(
+        model: AIConfig.defaultModel,
+        apiKey: AIConfig.geminiApiKey,
+      );
       final prompt = '''
         I am a fitness trainer AI. The user is a $fitnessLevel looking for ${goal.label}. They weigh $weightKg kg.
         Provide a short, motivating summary (1 sentence), 3 personalized nutrition tips, and 3 recovery tips.

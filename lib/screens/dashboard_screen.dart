@@ -4,6 +4,7 @@ import '../theme/app_typography.dart';
 import '../widgets/glass_card.dart';
 import '../services/user_state.dart';
 import '../services/ai_plan_service.dart';
+import '../services/firebase_service.dart';
 
 /// Screen 11: Main Dashboard (Home) — Central HUD wired to real data.
 class DashboardScreen extends StatefulWidget {
@@ -18,10 +19,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   late AnimationController _ringAnimController;
   late Animation<double> _ringAnim;
 
-  // We'll use local state since we don't have InheritedWidget yet.
-  // Reading from UserState singleton pattern.
   final _userState = UserState();
   bool _loaded = false;
+  String? _profileImageUrl;
+  String _displayName = 'User';
 
   @override
   void initState() {
@@ -35,6 +36,18 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Future<void> _loadData() async {
     await _userState.initialize();
+
+    // Load user data from Firebase
+    if (FirebaseService.isLoggedIn) {
+      final profile = await FirebaseService.getUserProfile();
+      if (profile != null && mounted) {
+        setState(() {
+          _displayName = profile['displayName'] ?? 'User';
+          _profileImageUrl = profile['profileImageUrl'];
+        });
+      }
+    }
+
     if (mounted) {
       setState(() => _loaded = true);
       _ringAnimController.forward();
@@ -49,7 +62,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    final name = _loaded ? _userState.userName : 'User';
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 380;
+    final horizontalPadding = isNarrow ? 16.0 : 24.0;
+    final ringSize = isNarrow ? 160.0 : (screenWidth > 400 ? 200.0 : 180.0);
+
+    final name = _loaded ? _displayName : 'User';
     final greeting = _loaded ? _userState.greeting : 'Good day';
     final steps = _loaded ? _userState.todaySteps : 0;
     final stepGoal = _loaded ? _userState.stepGoal : 20000;
@@ -63,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       backgroundColor: AppColors.pureWhite,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -74,9 +92,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                     height: 40,
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.deepNavy.withOpacity(0.08)),
-                    child: const Icon(Icons.person_outline,
-                        color: AppColors.deepNavy, size: 22)),
+                        color: AppColors.deepNavy.withOpacity(0.08),
+                        image: _profileImageUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(_profileImageUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null),
+                    child: _profileImageUrl == null
+                        ? const Icon(Icons.person_outline,
+                            color: AppColors.deepNavy, size: 22)
+                        : null),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -107,8 +133,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 child: AnimatedBuilder(
                   animation: _ringAnim,
                   builder: (_, __) => SizedBox(
-                    width: 200,
-                    height: 200,
+                    width: ringSize,
+                    height: ringSize,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
