@@ -197,7 +197,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 12),
               _techItem('Author', 'Prakhyat (Lead Architect & Developer)'),
               _techItem('License', 'MIT Open-Source License'),
-              _techItem('Live Web Demo', 'https://truckload-optimizer-eztke.web.app'),
+              _techItem('Live Web Demo', 'https://luminai-ai.web.app'),
               _techItem('GitHub Repository', 'https://github.com/Prakhyat05/LuminAI'),
               const SizedBox(height: 24),
               ElevatedButton(

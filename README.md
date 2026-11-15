@@ -6,7 +6,7 @@
 
 ---
 
-[![Live Web Demo](https://img.shields.io/badge/🌐_Live_Demo-Open_in_Browser-00C853?style=for-the-badge&logo=googlechrome&logoColor=white)](https://truckload-optimizer-eztke.web.app)
+[![Live Web Demo](https://img.shields.io/badge/🌐_Live_Demo-luminai--ai.web.app-00C853?style=for-the-badge&logo=googlechrome&logoColor=white)](https://luminai-ai.web.app)
 [![Download APK](https://img.shields.io/badge/📱_Download_APK-v1.0.0_arm64_(53.7MB)-1A1A2E?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm64-v1.0.0.apk)
 [![GitHub Releases](https://img.shields.io/badge/📦_All_Releases-v1.0.0_Available-0969DA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/tag/v1.0.0)
 
@@ -16,7 +16,7 @@
 [![Dart](https://img.shields.io/badge/Dart-3.4+-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
 [![Google ML Kit](https://img.shields.io/badge/Google_ML_Kit-Pose_Detection_30FPS-4285F4?style=flat-square&logo=google&logoColor=white)](https://developers.google.com/ml-kit)
 [![Gemini 1.5 Flash](https://img.shields.io/badge/Google_Gemini-1.5_Flash_API-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)](https://ai.google.dev)
-[![Firebase Hosting](https://img.shields.io/badge/Firebase-Live_Hosting-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://truckload-optimizer-eztke.web.app)
+[![Firebase Hosting](https://img.shields.io/badge/Firebase-Live_Hosting-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://luminai-ai.web.app)
 [![SQLite](https://img.shields.io/badge/SQLite-Local_Persistence-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
 [![Build Size](https://img.shields.io/badge/APK_Size-53.7MB_(-62%25)-success?style=flat-square)](#-release-binaries--download-center)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
@@ -193,7 +193,7 @@ Evaluating LuminAI is seamless even without hardware cameras or account setup:
 1. **One-Tap Guest Mode:** On the sign-in screen, tap **"Continue as Guest"** for instant access without entering credentials.
 2. **Camera Fallback Simulator:** If no camera is detected or when running on desktop/emulators, LuminAI automatically activates an algorithmic pose generator simulating authentic human kinematic cycles for testing reps and voice coaching.
 3. **Live Web Browser App:** Test the entire UI, workout logging, AI generation, and settings directly in your browser without installing anything:  
-   👉 **[https://truckload-optimizer-eztke.web.app](https://truckload-optimizer-eztke.web.app)**
+   👉 **[https://luminai-ai.web.app](https://luminai-ai.web.app)** *(Mirror: [https://luminai-fitness.web.app](https://luminai-fitness.web.app))*
 
 ---
 
@@ -285,6 +285,6 @@ Developed with ❤️ by **Prakhyat** as a Major Project.
 
 - **GitHub:** [@Prakhyat05](https://github.com/Prakhyat05)
 - **Repository:** [https://github.com/Prakhyat05/LuminAI](https://github.com/Prakhyat05/LuminAI)
-- **Live Demo:** [https://truckload-optimizer-eztke.web.app](https://truckload-optimizer-eztke.web.app)
+- **Live Demo:** [https://luminai-ai.web.app](https://luminai-ai.web.app) *(Mirror: [https://luminai-fitness.web.app](https://luminai-fitness.web.app))*
 
 This project is open-source under the **[MIT License](LICENSE)**.
