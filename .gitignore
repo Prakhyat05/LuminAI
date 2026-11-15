@@ -54,5 +54,6 @@ ios/Runner/GoogleService-Info.plist
 
 # Local caches & reports
 .claude/
+.firebase/
 *.docx
 

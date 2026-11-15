@@ -1,14 +1,20 @@
 # LuminAI — Elite AI-Powered Personal Fitness Trainer
 
+[![Live Web Demo](https://img.shields.io/badge/🌐_Live_Demo-Open_in_Browser-00C853?style=for-the-badge)](https://truckload-optimizer-eztke.web.app)
+[![Download APK](https://img.shields.io/badge/📱_Download_APK-v1.0.0_Release-1A1A2E?style=for-the-badge&logo=android)](https://github.com/Prakhyat05/LuminAI/releases/latest)
+
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.4+-0175C2?logo=dart)](https://dart.dev)
 [![Google ML Kit](https://img.shields.io/badge/Google_ML_Kit-Pose_Detection-4285F4?logo=google)](https://developers.google.com/ml-kit)
 [![Gemini AI](https://img.shields.io/badge/Google_Gemini-1.5_Flash-8E75B2?logo=googlegemini)](https://ai.google.dev)
-[![Firebase](https://img.shields.io/badge/Firebase-Auth_%26_Firestore-FFCA28?logo=firebase)](https://firebase.google.com)
+[![Firebase Hosting](https://img.shields.io/badge/Firebase-Live_Hosting-FFCA28?logo=firebase)](https://truckload-optimizer-eztke.web.app)
 [![SQLite](https://img.shields.io/badge/SQLite-Local_Persistence-003B57?logo=sqlite)](https://sqlite.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 > **LuminAI** is a cross-platform mobile application that combines on-device computer vision, biomechanical coordinate geometry, and generative AI to deliver real-time exercise form analysis, rep tracking, and personalized coaching.
+>
+> 🌐 **Live Web Demo:** [https://truckload-optimizer-eztke.web.app](https://truckload-optimizer-eztke.web.app)  
+> 📱 **Android Release APK:** [LuminAI-v1.0.0.apk](https://github.com/Prakhyat05/LuminAI/releases/latest)
 
 ---
 
