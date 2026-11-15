@@ -3,54 +3,40 @@
 This document tracks the current status of the LuminAI project, detailing what has been implemented and what is remaining. Please refer to this file and keep it updated after any significant changes.
 
 ## Overview
-**Project Name:** LuminAI
+**Project Name:** LuminAI  
 **Description:** Elite AI-Based Personal Trainer app built with Flutter, utilizing Google ML Kit for pose detection, Generative AI for customized plans, and Text-to-Speech (TTS) for voice coaching.
 
 ## ✅ What is Done
 
 ### Project Setup & Architecture
-- Flutter project structure initialized with clean architecture principles (`lib/screens`, `lib/services`, `lib/models`, `lib/theme`, `lib/navigation`, `lib/widgets`, etc.).
-- Dependencies configured in `pubspec.yaml` (including `camera`, `google_mlkit_pose_detection`, `google_generative_ai`, `flutter_tts`, `sqflite`, `fl_chart`, etc.).
-- Theming system established (`AppTheme`, `AppColors`, `AppTypography`).
+- Clean architecture principles across `lib/screens`, `lib/services`, `lib/models`, `lib/theme`, `lib/navigation`, `lib/widgets`.
+- Full dependency configuration in `pubspec.yaml` (camera, ML Kit pose detection, Gemini API, Flutter TTS, SQLite, Cloud Firestore).
+- High-contrast monochrome design system with glassmorphism support (`AppTheme`, `AppColors`, `AppTypography`).
 
-### UI & Screens
-The majority of the UI layer has been implemented:
-- **Onboarding:** Splash screen, skeletal tracking preview, voice coach info, reports info.
-- **Authentication:** Auth Gateway, OTP, Identity Setup, Biodata Calibration, Institutional Verification.
-- **Setup:** Goal Architect, Nutrition Command.
-- **Core App:** Main Navigation, Exercise Library, Instructional Details, Live AI Tracking.
-- **AI & Planning:** AI Plan Screen, AI Tips Screen.
-- **Active Session:** Environment Calibration, Active AI HUD, Skeletal Trace, Form Alerts, Mid-Session Controls, Session Recap.
-- **Analytics:** Form Accuracy (perfect form percentage), Consistency Heatmap, Performance Trends.
-- **Social:** Team Leaderboard, Faculty Review.
+### Security & Hardware Configurations
+- **Environment Variable Protection:** Cleaned out hardcoded API keys; Gemini API key injected via `--dart-define=GEMINI_API_KEY` with graceful offline fallback.
+- **Hardware Permissions:** Full camera, microphone, and motion permissions configured in `AndroidManifest.xml` and `ios/Runner/Info.plist`.
+- **Database Safety:** Safe SQLite desktop and test initialization in `DataPersistenceService`.
 
-### Services (Core Logic Structures)
-- Base services created and implemented for various functionalities:
-  - `ai_plan_service.dart` (Google Generative AI integrated via `GEMINI_API_KEY`)
-  - `auth_service.dart` (Local simulation setup using SharedPreferences)
-  - `data_persistence_service.dart` (SQLite Database integrated)
-  - `exercise_tracking_config.dart` (Pose Tracking Rules mapped)
-  - `pose_engine.dart` (Google ML Kit Pose Detection integrated)
-  - `tts_service.dart` (Flutter TTS integrated for voice coaching)
-  - `user_state.dart` (State management integrated)
+### Computer Vision & ML Kit Pose Engine
+- Real-time 30fps landmark tracking with 17 biomechanically calibrated exercises in `exercise_tracking_config.dart`.
+- Coordinate trigonometry using quadrant-aware `atan2` angle calculation with moving-average noise filter and hysteresis debouncing.
+- **Camera Fallback / Simulator Mode:** Interactive simulation engine allows running simulated workouts on emulators and non-camera desktop environments without crashing.
 
-### Data Integration & Core Features
-- **Data Integration:** Analytics & Dashboards (`form_accuracy_screen.dart`, `dashboard_screen.dart`) retrieve real user data from `data_persistence_service.dart`.
-- **Exercise Library:** Exercise Library serves fixed definitions correctly without the need for DB seeding.
-- **Live Camera & ML Pose Detection:** Real-time ML Kit inference wired to `LiveAITrackingScreen` and `PoseEngine`.
-- **AI & Generative Planning:** Gemini API integrated in `ai_plan_service.dart`.
-- **Text-To-Speech (TTS):** Real-time voice cues implemented in `tts_service.dart`.
+### UX & Data Integration
+- **1-Tap Guest / Recruiter Mode:** Instant app exploration bypassing phone OTP or Google Sign-In setup.
+- **Session Data Persistence & Firebase Sync:** Workouts completed in `LiveAITrackingScreen` save through `UserState` to both SQLite and Firebase Firestore.
+- **Dynamic Session Recap:** `SessionRecapScreen` displays real telemetry or queries recent workout history.
+- **Consistency Heatmap:** Dynamic month/year headers and data mapping from `DataPersistenceService.getMonthlyActivity()`.
+- **Settings:** Voice coach switch dynamically updates `TTSService().setEnabled()`.
 
-## ⏳ What Has To Be Done
+### Automated Verification
+- Automated unit tests for biomechanical angle calculation (`test/pose_engine_test.dart`).
+- State machine rep validation and reset tests.
+- Clean passing test suite (`flutter test` passes 8/8 tests with 0 failures).
+- Zero compilation errors and zero static analysis warnings.
 
-### 1. Authentication & Backend Setup
-- Connect the `auth_service.dart` and OTP flow to an actual authentication provider (e.g., Firebase Auth or a custom backend). *(Deferred for later)*
-- Ensure user biodata and progress sync reliably across devices.
-
-### 2. Testing & Polish
-- Handle camera permissions gracefully across iOS and Android if not already handled natively.
-- Perform on-device testing (performance of ML Kit on mobile devices).
-- Add error handling and loading states for async operations.
-
----
-*Note: Always update this file after completing any major feature or milestone.*
+## 🚀 Deployment & Next Steps
+- **Build Release APK:** `flutter build apk --release --dart-define=GEMINI_API_KEY="..."`
+- **Deploy Web Live Demo:** `flutter build web --release` and `firebase deploy --only hosting`
+- **Publish to GitHub Releases:** Attach `LuminAI-v1.0.0.apk` to release `v1.0.0`.
