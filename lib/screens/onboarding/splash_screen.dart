@@ -47,33 +47,40 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _initializeAndNavigate() async {
-    // Initialize step counter
-    final stepService = StepCounterService();
-    await stepService.initialize();
+    try {
+      final stepService = StepCounterService();
+      await stepService.initialize();
+    } catch (e) {
+      debugPrint('Step service init error: $e');
+    }
 
     // Wait for animation then navigate
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    Future.delayed(const Duration(milliseconds: 2000), () {
       if (!mounted) return;
       _navigateBasedOnState();
     });
   }
 
   Future<void> _navigateBasedOnState() async {
-    final auth = AuthService();
-    final isAuth = await auth.isAuthenticated;
-    final onboardingComplete = await auth.isOnboardingComplete;
+    try {
+      final auth = AuthService();
+      final isAuth = await auth.isAuthenticated;
+      final onboardingComplete = await auth.isOnboardingComplete;
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (isAuth && onboardingComplete) {
-      // User is logged in and completed onboarding - go to dashboard
-      Navigator.pushReplacementNamed(context, '/home');
-    } else if (isAuth && !onboardingComplete) {
-      // User logged in but needs to complete profile setup
-      Navigator.pushReplacementNamed(context, '/identity-setup');
-    } else {
-      // New user - show onboarding
-      Navigator.pushReplacementNamed(context, '/onboarding');
+      if (isAuth && onboardingComplete) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else if (isAuth && !onboardingComplete) {
+        Navigator.pushReplacementNamed(context, '/identity-setup');
+      } else {
+        Navigator.pushReplacementNamed(context, '/onboarding');
+      }
+    } catch (e) {
+      debugPrint('Navigation error: $e');
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/onboarding');
+      }
     }
   }
 

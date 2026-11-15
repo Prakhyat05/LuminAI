@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,16 +18,33 @@ class FirebaseService {
 
   /// Initialize Firebase - call this before runApp()
   static Future<void> initialize() async {
-    await Firebase.initializeApp();
-    _auth = FirebaseAuth.instance;
-    _firestore = FirebaseFirestore.instance;
-    _storage = FirebaseStorage.instance;
+    try {
+      if (kIsWeb) {
+        await Firebase.initializeApp(
+          options: const FirebaseOptions(
+            apiKey: 'REDACTED_WEB_KEY',
+            appId: '1:446427094526:web:luminai-web-app',
+            messagingSenderId: '446427094526',
+            projectId: 'truckload-optimizer-eztke',
+            storageBucket: 'truckload-optimizer-eztke.firebasestorage.app',
+          ),
+        );
+      } else {
+        await Firebase.initializeApp();
+      }
+      _auth = FirebaseAuth.instance;
+      _firestore = FirebaseFirestore.instance;
+      _storage = FirebaseStorage.instance;
 
-    // Enable Firestore persistence
-    _firestore?.settings = const Settings(
-      persistenceEnabled: true,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-    );
+      if (!kIsWeb) {
+        _firestore?.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        );
+      }
+    } catch (e) {
+      debugPrint('Firebase initialization notice: $e');
+    }
   }
 
   /// Get FirebaseAuth instance
@@ -45,8 +63,8 @@ class FirebaseService {
     return _firestore!;
   }
 
-  /// Get the current user (null if not logged in)
-  static User? get currentUser => auth.currentUser;
+  /// Get the current user (null if not logged in or uninitialized)
+  static User? get currentUser => _auth?.currentUser;
 
   /// Check if user is logged in
   static bool get isLoggedIn => currentUser != null;
