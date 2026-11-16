@@ -7,6 +7,7 @@
 ---
 
 [![Live Web Demo](https://img.shields.io/badge/🌐_Live_Demo-luminai--ai.web.app-00C853?style=for-the-badge&logo=googlechrome&logoColor=white)](https://luminai-ai.web.app)
+[![Watch 1080p Video](https://img.shields.io/badge/🎬_Watch_Demo_Video-1080p_MP4-E50914?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4)
 [![Download APK](https://img.shields.io/badge/📱_Download_APK-v1.0.0_arm64_(53.7MB)-1A1A2E?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm64-v1.0.0.apk)
 [![GitHub Releases](https://img.shields.io/badge/📦_All_Releases-v1.0.0_Available-0969DA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/tag/v1.0.0)
 
@@ -19,7 +20,22 @@
 [![Firebase Hosting](https://img.shields.io/badge/Firebase-Live_Hosting-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://luminai-ai.web.app)
 [![SQLite](https://img.shields.io/badge/SQLite-Local_Persistence-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
 [![Build Size](https://img.shields.io/badge/APK_Size-53.7MB_(-62%25)-success?style=flat-square)](#-release-binaries--download-center)
+[![Test Suite](https://img.shields.io/badge/Tests-8%2F8_Passed_(100%25)-success?style=flat-square)](#-testing--quality-assurance)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+
+</div>
+
+---
+
+## 🎬 Official 1080p Video Walkthrough
+
+Click the player below to watch or download the complete 16:9 walkthrough video demonstrating the entire app flow, live computer vision tracking, and AI coaching functionalities:
+
+<div align="center">
+
+[![LuminAI 1080p Video Walkthrough](assets/images/video_preview.png)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4)
+
+*▶️ [Click here to download or stream the 1080p MP4 directly (4.55 MB)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4)*
 
 </div>
 
@@ -27,9 +43,11 @@
 
 ## 📖 Table of Contents
 - [Overview & Value Proposition](#-overview--value-proposition)
-- [Key Engineering Highlights](#-key-engineering-highlights)
+- [Visual Showcase & Feature Highlights](#-visual-showcase--feature-highlights)
+- [End-to-End User Flow](#-end-to-end-user-flow)
 - [System Architecture](#-system-architecture)
 - [Mathematical Formulation: Biomechanical Kinematics](#-mathematical-formulation-biomechanical-kinematics)
+- [Pose Engine State Machine (FSM)](#-pose-engine-state-machine-fsm)
 - [Supported Trackable Exercises](#-supported-trackable-exercises)
 - [Recruiter & Developer Demo Mode](#-recruiter--developer-demo-mode)
 - [Release Binaries & Download Center](#-release-binaries--download-center)
@@ -42,7 +60,7 @@
 
 ## 🎯 Overview & Value Proposition
 
-**LuminAI** is a production-grade, cross-platform personal fitness trainer that replaces invasive camera cloud streaming and rigid fitness apps with **100% on-device computer vision** and **adaptive generative AI**. 
+**LuminAI** is an enterprise-grade, cross-platform personal fitness trainer that replaces invasive camera cloud streaming and rigid fitness apps with **100% on-device computer vision** and **adaptive generative AI**.
 
 Traditional fitness apps suffer from three fundamental problems:
 1. **Privacy Invasiveness:** Streaming raw video to remote cloud servers creates severe privacy and security risks.
@@ -57,26 +75,99 @@ Traditional fitness apps suffer from three fundamental problems:
 
 ---
 
-## ⚡ Key Engineering Highlights
+## 📸 Visual Showcase & Feature Highlights
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        CORE SYSTEM CAPABILITIES                        │
-├───────────────────────────────┬────────────────────────────────────────┤
-│ 👁️  On-Device Pose Estimation  │ 33 3D skeletal landmarks @ 30 FPS     │
-│ 📐 Biomechanical Kinematics    │ atan2 3-point joint angle trigonometry │
-│ 🔄 Rep State Machine           │ Hysteresis-filtered phase transitions  │
-│ 🗣️ Voice Coach Pipeline        │ Priority queues & ducking deduplication│
-│ 🧠 Generative AI Engine        │ Gemini 1.5 Flash dynamic plan synthesis│
-│ 💾 Offline-First Data Layer    │ SQLite + SharedPreferences + Firestore │
-│ 🚀 Recruiter Guest Mode        │ Instant one-tap evaluation + simulator │
-└───────────────────────────────┴────────────────────────────────────────┘
-```
+<table align="center" width="100%">
+<tr>
+<td width="50%" align="center">
+<b>01. Live Biomechanical Pose Estimation</b><br/>
+<img src="assets/images/preview_live_tracking.png" width="100%" alt="Live Pose Estimation"/>
+<br/><i>33 skeletal landmarks tracked at 30+ FPS with sub-50ms kinematic angles and real-time audio voice cues.</i>
+</td>
+<td width="50%" align="center">
+<b>02. Dynamic Command Dashboard</b><br/>
+<img src="assets/images/preview_dashboard.png" width="100%" alt="Command Dashboard"/>
+<br/><i>Centralized telemetry hub: active streaks, monthly consistency heatmap, daily targets & macro rings.</i>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<b>03. Gemini AI Workout Architect</b><br/>
+<img src="assets/images/preview_ai_architect.png" width="100%" alt="Gemini Workout Architect"/>
+<br/><i>Context-aware workout routine generation tailored to fatigue and muscle splits, with 1-tap live camera launch.</i>
+</td>
+<td width="50%" align="center">
+<b>04. Precision Nutrition Command Center</b><br/>
+<img src="assets/images/preview_nutrition.png" width="100%" alt="Nutrition Command Center"/>
+<br/><i>Dynamic real-time macro rings (Protein, Carbs, Fats), instant modal meal logger & offline SQLite persistence.</i>
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+<b>05. Clinical Performance Analytics</b><br/>
+<img src="assets/images/preview_analytics.png" width="100%" alt="Clinical Analytics"/>
+<br/><i>6-axis joint compliance radar charts, longitudinal fatigue tracking & shareable clinical PDF reports.</i>
+</td>
+<td width="50%" align="center">
+<b>06. Bio-Adaptive Onboarding Calibration</b><br/>
+<img src="assets/images/preview_onboarding.png" width="100%" alt="Bio-Adaptive Onboarding"/>
+<br/><i>Personalized anatomical calibration baseline for hypertrophy, calisthenics, and injury prevention.</i>
+</td>
+</tr>
+</table>
 
-- **Sub-30ms Inference Latency:** Skeletal tracking runs entirely on local device hardware (CPU/GPU acceleration via ML Kit).
-- **Hysteresis Rep Counter:** Prevents false-positive double counting around inflection boundaries ($\pm 5.0^\circ$ hysteresis band).
-- **Voice Feedback Ducking:** Audio queue prioritizes immediate biomechanical form alerts over general milestone notifications.
-- **62% Release Size Reduction:** Native APKs compiled with ABI splitting (`arm64-v8a`), reducing size from **139.6 MB down to 53.7 MB**.
+---
+
+## 🗺️ End-to-End User Flow
+
+The following interactive wireflow illustrates the user's journey from onboarding to real-time workout tracking and clinical export:
+
+```mermaid
+flowchart TD
+    classDef startEnd fill:#0F172A,stroke:#00E5FF,stroke-width:2px,color:#fff;
+    classDef primary fill:#1E293B,stroke:#38BDF8,stroke-width:1px,color:#fff;
+    classDef ai fill:#312E81,stroke:#818CF8,stroke-width:2px,color:#fff;
+    classDef tracking fill:#064E3B,stroke:#10B981,stroke-width:2px,color:#fff;
+    classDef data fill:#1F2937,stroke:#9CA3AF,stroke-width:1px,color:#fff;
+
+    START(["🚀 App Launch"]) :::startEnd --> SPLASH["Screen 1: Splash Reveal<br/>(Brand & Hardware Sensor Check)"] :::primary
+    
+    SPLASH --> AUTH_CHECK{"Authenticated?"}
+    AUTH_CHECK -- No --> ONBOARDING["Screen 2: Skeletal Calibration Onboarding<br/>(33-Point Setup & Audio Introduction)"] :::primary
+    ONBOARDING --> AUTH_GATE["Screen 3: Auth Gateway<br/>(One-Tap 'Continue as Guest' or Phone OTP)"] :::primary
+    AUTH_GATE --> GOALS["Screen 4: Goal Architect<br/>(Hypertrophy / Calisthenics / Athleticism)"] :::primary
+    GOALS --> DASHBOARD
+    
+    AUTH_CHECK -- Yes / Guest --> DASHBOARD["Screen 5: Command Dashboard<br/>(Streaks, Monthly Heatmap, Daily Load & Macros)"] :::primary
+
+    DASHBOARD --> PLAN_CHOICE{"User Action"}
+    
+    PLAN_CHOICE -- "Generate AI Routine" --> GEMINI_PLAN["Screen 6: Gemini AI Workout Architect<br/>(Context-Aware Sets, Reps & Muscle Splits)"] :::ai
+    GEMINI_PLAN --> LIVE_CAM
+    
+    PLAN_CHOICE -- "Direct Workout" --> EXERCISE_LIB["Screen 7: Exercise Library<br/>(17 Biomechanical Movement Profiles)"] :::primary
+    EXERCISE_LIB --> LIVE_CAM
+    
+    PLAN_CHOICE -- "Log Nutrition" --> NUTRITION["Screen 8: Nutrition Command<br/>(Dynamic Macro Rings & Modal Meal Logger)"] :::primary
+    NUTRITION --> LOCAL_DB[("Local SQLite & Cloud Cache")] :::data
+    
+    PLAN_CHOICE -- "View Reports" --> ANALYTICS["Screen 9: Faculty Clinical Review<br/>(6-Axis Radar, Fatigue Curve & PDF Export)"] :::primary
+
+    subgraph CoreVisionLoop ["⚡ Real-Time On-Device Vision Engine"]
+        LIVE_CAM["Screen 10: Live AI Pose Tracking (/live-ai)<br/>(Camera / Studio Mode Toggle)"] :::tracking
+        POSE_EST["Google ML Kit BlazePose<br/>(33 Landmarks @ 30 FPS)"] :::tracking
+        KINEMATICS["Kinematic Joint Angles<br/>(atan2 Biomechanical Vectors)"] :::tracking
+        FSM["Rep Counting State Machine<br/>(±5° Hysteresis Filter)"] :::tracking
+        AUDIO_COACH["Real-Time Audio Coach<br/>(Priority-Queued Voice Feedback)"] :::tracking
+        
+        LIVE_CAM --> POSE_EST --> KINEMATICS --> FSM --> AUDIO_COACH
+        AUDIO_COACH -.-> LIVE_CAM
+    end
+
+    FSM --> SESSION_RECAP["Screen 11: Session Recap<br/>(Calories Burned, Rep Count & Form Accuracy %)"] :::primary
+    SESSION_RECAP --> LOCAL_DB
+    LOCAL_DB --> DASHBOARD
+```
 
 ---
 
@@ -162,27 +253,55 @@ $$\text{Transition } \text{Extension} \to \text{Completed Rep} \iff \bar{\theta}
 
 ---
 
+## 🔄 Pose Engine State Machine (FSM)
+
+The Finite State Machine enforces rigorous form criteria before incrementing any repetition counter:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Session Initialized
+    Idle --> Calibrating: Landmarks in Frame
+    Calibrating --> Tracking: Calibration Confirmed (>85% Confidence)
+    
+    state Tracking {
+        [*] --> Extension: Neutral Starting Stance
+        Extension --> InflectionPhase: Joint Angle < (Inflection - 5°)
+        InflectionPhase --> ExtensionPhase: Joint Angle > (Extension + 5°)
+        ExtensionPhase --> RepCounted: Full Range of Motion Verified
+        RepCounted --> Extension: Trigger Voice Cue & Increment
+    }
+    
+    Tracking --> FormWarning: Joint Deviation Detected (>15° Error)
+    FormWarning --> Tracking: Form Corrected
+    Tracking --> Paused: User Pause / Out of Frame
+    Paused --> Tracking: In-Frame Resume
+    Tracking --> Completed: Target Reps / Sets Achieved
+    Completed --> [*]
+```
+
+---
+
 ## 📱 Supported Trackable Exercises
 
 LuminAI supports 17 exercise profiles categorized by muscle group:
 
-| Muscle Group | Exercise | Primary Biomechanical Joint | Target Range | Form Criteria Monitored |
-| :--- | :--- | :--- | :--- | :--- |
-| **Upper Body** | Bicep Curls | Left / Right Elbow | $45^\circ \longleftrightarrow 160^\circ$ | Full extension without shoulder swing |
-| | Push-ups | Elbows & Torso | $70^\circ \longleftrightarrow 165^\circ$ | Chest depth & straight back plane |
-| | Shoulder Press | Elbows & Deltoids | $80^\circ \longleftrightarrow 170^\circ$ | Vertical press trajectory |
-| | Lateral Raises | Shoulder Abduction | $20^\circ \longleftrightarrow 90^\circ$ | Arm parallel to ground, no trap shrug |
-| | Tricep Dips | Elbow Flexion | $90^\circ \longleftrightarrow 165^\circ$ | 90-degree elbow lock at dip bottom |
-| | Pull-ups | Elbow & Lat Hinge | $50^\circ \longleftrightarrow 170^\circ$ | Chin over bar, full dead-hang |
-| **Lower Body** | Barbell / Bodyweight Squats | Left / Right Knees | $80^\circ \longleftrightarrow 170^\circ$ | Femur parallel to floor, knee alignment |
-| | Walking Lunges | Lead Knee & Trail Knee | $85^\circ \longleftrightarrow 165^\circ$ | 90-degree front knee, upright spine |
-| | Calf Raises | Ankle Plantarflexion | $120^\circ \longleftrightarrow 165^\circ$ | Maximum calf peak contraction |
-| | Glute Bridges | Hip Extension | $130^\circ \longleftrightarrow 180^\circ$ | Full pelvic lock at top of motion |
-| **Core & Cardio** | Forearm Plank | Hip & Spine Linearity | $170^\circ \longleftrightarrow 180^\circ$ | Zero hip sag or excessive pike |
-| | Abdominal Crunches | Torso-Hip Angle | $110^\circ \longleftrightarrow 160^\circ$ | Shoulder blade lift, cervical neck safety |
-| | Jumping Jacks | Shoulder & Hip Span | $30^\circ \longleftrightarrow 140^\circ$ | Full overhead arm sweep & foot spread |
-| | Mountain Climbers | Alternating Hip Drives | $60^\circ \longleftrightarrow 160^\circ$ | Knee drive cadence & steady plank posture |
-| | Burpees | Multi-Phase Compound | Compound | Full ground touch to explosive jump |
+| Muscle Group | Exercise | Primary Biomechanical Joint | Target Range | Form Criteria Monitored | Real-Time Voice Cue |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Upper Body** | Bicep Curls | Left / Right Elbow | $45^\circ \longleftrightarrow 160^\circ$ | Full extension without shoulder swing | *"Keep elbows pinned to your sides"* |
+| | Push-ups | Elbows & Torso | $70^\circ \longleftrightarrow 165^\circ$ | Chest depth & straight back plane | *"Keep your core tight, don't sag hips"* |
+| | Shoulder Press | Elbows & Deltoids | $80^\circ \longleftrightarrow 170^\circ$ | Vertical press trajectory | *"Lock out overhead without arching back"* |
+| | Lateral Raises | Shoulder Abduction | $20^\circ \longleftrightarrow 90^\circ$ | Arm parallel to ground, no trap shrug | *"Lead with your elbows, control the descent"* |
+| | Tricep Dips | Elbow Flexion | $90^\circ \longleftrightarrow 165^\circ$ | 90-degree elbow lock at dip bottom | *"Descend to 90 degrees"* |
+| | Pull-ups | Elbow & Lat Hinge | $50^\circ \longleftrightarrow 170^\circ$ | Chin over bar, full dead-hang | *"Full range of motion, avoid kipping"* |
+| **Lower Body** | Barbell / Bodyweight Squats | Left / Right Knees | $80^\circ \longleftrightarrow 170^\circ$ | Femur parallel to floor, knee alignment | *"Push through your heels, thighs parallel"* |
+| | Walking Lunges | Lead Knee & Trail Knee | $85^\circ \longleftrightarrow 165^\circ$ | 90-degree front knee, upright spine | *"Keep your front knee behind your toes"* |
+| | Calf Raises | Ankle Plantarflexion | $120^\circ \longleftrightarrow 165^\circ$ | Maximum calf peak contraction | *"Hold the contraction at the top"* |
+| | Glute Bridges | Hip Extension | $130^\circ \longleftrightarrow 180^\circ$ | Full pelvic lock at top of motion | *"Squeeze glutes at peak extension"* |
+| **Core & Cardio** | Forearm Plank | Hip & Spine Linearity | $170^\circ \longleftrightarrow 180^\circ$ | Zero hip sag or excessive pike | *"Maintain a straight spine line"* |
+| | Abdominal Crunches | Torso-Hip Angle | $110^\circ \longleftrightarrow 160^\circ$ | Shoulder blade lift, cervical neck safety | *"Contract your abs, don't pull your neck"* |
+| | Jumping Jacks | Shoulder & Hip Span | $30^\circ \longleftrightarrow 140^\circ$ | Full overhead arm sweep & foot spread | *"Stay light on the balls of your feet"* |
+| | Mountain Climbers | Alternating Hip Drives | $60^\circ \longleftrightarrow 160^\circ$ | Knee drive cadence & steady plank posture | *"Drive knees forward, maintain tempo"* |
+| | Burpees | Multi-Phase Compound | Compound | Full ground touch to explosive jump | *"Full chest to ground, jump straight up"* |
 
 ---
 
@@ -201,13 +320,14 @@ Evaluating LuminAI is seamless even without hardware cameras or account setup:
 
 Official production builds are hosted on [GitHub Releases (v1.0.0)](https://github.com/Prakhyat05/LuminAI/releases/tag/v1.0.0):
 
-| Release Asset | Platform / Architecture | File Size | Recommended For | Direct Download |
+| Release Asset | Platform / Type | File Size | Description | Direct Download |
 | :--- | :--- | :--- | :--- | :---: |
-| **`LuminAI-arm64-v1.0.0.apk`** | **Android 64-bit (`arm64-v8a`)** | **53.7 MB** | **>99% of modern Android smartphones (Recommended)** | [⬇️ Download](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm64-v1.0.0.apk) |
-| **`LuminAI-universal-v1.0.0.apk`** | Android Universal (Fat Binary) | 139.6 MB | All Android architectures combined | [⬇️ Download](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-universal-v1.0.0.apk) |
-| **`LuminAI-arm32-v1.0.0.apk`** | Android 32-bit (`armeabi-v7a`) | 46.0 MB | Older legacy Android smartphones | [⬇️ Download](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm32-v1.0.0.apk) |
-| **`LuminAI-x86_64-v1.0.0.apk`** | Android x86_64 | 53.1 MB | Android Studio Emulators & Chromebooks | [⬇️ Download](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-x86_64-v1.0.0.apk) |
-| **`LuminAI-web-v1.0.0.zip`** | Web Static Assets (SPA) | 7.6 MB | Self-hosting on Firebase, Netlify, or Apache | [⬇️ Download](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-web-v1.0.0.zip) |
+| **`LuminAI-App-Walkthrough-16x9.mp4`** | **Official 1080p Video** | **4.55 MB** | **Complete 16:9 walkthrough video demonstrating live features** | [🎬 Watch / Download](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4) |
+| **`LuminAI-arm64-v1.0.0.apk`** | **Android 64-bit (`arm64-v8a`)** | **53.7 MB** | **Recommended for >99% of modern Android smartphones** | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm64-v1.0.0.apk) |
+| **`LuminAI-universal-v1.0.0.apk`** | Android Universal (Fat Binary) | 139.6 MB | All Android architectures combined | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-universal-v1.0.0.apk) |
+| **`LuminAI-arm32-v1.0.0.apk`** | Android 32-bit (`armeabi-v7a`) | 46.0 MB | Older legacy Android smartphones | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm32-v1.0.0.apk) |
+| **`LuminAI-x86_64-v1.0.0.apk`** | Android x86_64 | 53.1 MB | Android Studio Emulators & Chromebooks | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-x86_64-v1.0.0.apk) |
+| **`LuminAI-web-v1.0.0.zip`** | Web Static Assets (SPA) | 7.6 MB | Self-hosting on Firebase, Netlify, or Apache | [⬇️ Download ZIP](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-web-v1.0.0.zip) |
 
 ---
 
@@ -260,7 +380,7 @@ LuminAI enforces rigorous quality verification via unit and widget tests:
 flutter test
 ```
 
-**Verified Test Coverage:**
+**Verified Test Coverage (8/8 Passed):**
 - `calculateJointAngle` 90-degree right angle trigonometric precision.
 - `calculateJointAngle` 180-degree collinear vector evaluation.
 - `calculateJointAngle` 45-degree acute angle calculation.
