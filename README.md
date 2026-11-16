@@ -124,47 +124,44 @@ The following interactive wireflow illustrates the user's journey from onboardin
 
 ```mermaid
 flowchart TD
-    classDef startEnd fill:#0F172A,stroke:#00E5FF,stroke-width:2px,color:#fff;
-    classDef primary fill:#1E293B,stroke:#38BDF8,stroke-width:1px,color:#fff;
-    classDef ai fill:#312E81,stroke:#818CF8,stroke-width:2px,color:#fff;
-    classDef tracking fill:#064E3B,stroke:#10B981,stroke-width:2px,color:#fff;
-    classDef data fill:#1F2937,stroke:#9CA3AF,stroke-width:1px,color:#fff;
-
-    START(["🚀 App Launch"]) :::startEnd --> SPLASH["Screen 1: Splash Reveal<br/>(Brand & Hardware Sensor Check)"] :::primary
+    START(["🚀 App Launch"]) --> SPLASH["Screen 1: Splash Reveal<br/>(Hardware Sensor & Camera Check)"]
     
     SPLASH --> AUTH_CHECK{"Authenticated?"}
-    AUTH_CHECK -- No --> ONBOARDING["Screen 2: Skeletal Calibration Onboarding<br/>(33-Point Setup & Audio Introduction)"] :::primary
-    ONBOARDING --> AUTH_GATE["Screen 3: Auth Gateway<br/>(One-Tap 'Continue as Guest' or Phone OTP)"] :::primary
-    AUTH_GATE --> GOALS["Screen 4: Goal Architect<br/>(Hypertrophy / Calisthenics / Athleticism)"] :::primary
+    AUTH_CHECK -- No --> ONBOARDING["Screen 2: Skeletal Calibration Onboarding<br/>(33-Point Setup & Audio Introduction)"]
+    ONBOARDING --> AUTH_GATE["Screen 3: Auth Gateway<br/>(One-Tap 'Continue as Guest' or Phone OTP)"]
+    AUTH_GATE --> GOALS["Screen 4: Goal Architect<br/>(Hypertrophy / Calisthenics / Athleticism)"]
     GOALS --> DASHBOARD
     
-    AUTH_CHECK -- Yes / Guest --> DASHBOARD["Screen 5: Command Dashboard<br/>(Streaks, Monthly Heatmap, Daily Load & Macros)"] :::primary
+    AUTH_CHECK -- Yes / Guest --> DASHBOARD["Screen 5: Command Dashboard<br/>(Streaks, Monthly Heatmap, Daily Load & Macros)"]
 
     DASHBOARD --> PLAN_CHOICE{"User Action"}
     
-    PLAN_CHOICE -- "Generate AI Routine" --> GEMINI_PLAN["Screen 6: Gemini AI Workout Architect<br/>(Context-Aware Sets, Reps & Muscle Splits)"] :::ai
+    PLAN_CHOICE -- "Generate AI Routine" --> GEMINI_PLAN["Screen 6: Gemini AI Workout Architect<br/>(Context-Aware Sets, Reps & Muscle Splits)"]
     GEMINI_PLAN --> LIVE_CAM
     
-    PLAN_CHOICE -- "Direct Workout" --> EXERCISE_LIB["Screen 7: Exercise Library<br/>(17 Biomechanical Movement Profiles)"] :::primary
+    PLAN_CHOICE -- "Direct Workout" --> EXERCISE_LIB["Screen 7: Exercise Library<br/>(17 Biomechanical Movement Profiles)"]
     EXERCISE_LIB --> LIVE_CAM
     
-    PLAN_CHOICE -- "Log Nutrition" --> NUTRITION["Screen 8: Nutrition Command<br/>(Dynamic Macro Rings & Modal Meal Logger)"] :::primary
-    NUTRITION --> LOCAL_DB[("Local SQLite & Cloud Cache")] :::data
+    PLAN_CHOICE -- "Log Nutrition" --> NUTRITION["Screen 8: Nutrition Command<br/>(Dynamic Macro Rings & Modal Meal Logger)"]
+    NUTRITION --> LOCAL_DB[("Local SQLite & Cloud Cache")]
     
-    PLAN_CHOICE -- "View Reports" --> ANALYTICS["Screen 9: Faculty Clinical Review<br/>(6-Axis Radar, Fatigue Curve & PDF Export)"] :::primary
+    PLAN_CHOICE -- "View Reports" --> ANALYTICS["Screen 9: Faculty Clinical Review<br/>(6-Axis Radar, Fatigue Curve & PDF Export)"]
 
     subgraph CoreVisionLoop ["⚡ Real-Time On-Device Vision Engine"]
-        LIVE_CAM["Screen 10: Live AI Pose Tracking (/live-ai)<br/>(Camera / Studio Mode Toggle)"] :::tracking
-        POSE_EST["Google ML Kit BlazePose<br/>(33 Landmarks @ 30 FPS)"] :::tracking
-        KINEMATICS["Kinematic Joint Angles<br/>(atan2 Biomechanical Vectors)"] :::tracking
-        FSM["Rep Counting State Machine<br/>(±5° Hysteresis Filter)"] :::tracking
-        AUDIO_COACH["Real-Time Audio Coach<br/>(Priority-Queued Voice Feedback)"] :::tracking
+        LIVE_CAM["Screen 10: Live AI Pose Tracking (/live-ai)<br/>(Camera / Studio Mode Toggle)"]
+        POSE_EST["Google ML Kit BlazePose<br/>(33 Landmarks @ 30 FPS)"]
+        KINEMATICS["Kinematic Joint Angles<br/>(atan2 Biomechanical Vectors)"]
+        FSM["Rep Counting State Machine<br/>(±5° Hysteresis Debounce)"]
+        AUDIO_COACH["Real-Time Audio Coach<br/>(Priority-Queued Voice Feedback)"]
         
-        LIVE_CAM --> POSE_EST --> KINEMATICS --> FSM --> AUDIO_COACH
+        LIVE_CAM --> POSE_EST
+        POSE_EST --> KINEMATICS
+        KINEMATICS --> FSM
+        FSM --> AUDIO_COACH
         AUDIO_COACH -.-> LIVE_CAM
     end
 
-    FSM --> SESSION_RECAP["Screen 11: Session Recap<br/>(Calories Burned, Rep Count & Form Accuracy %)"] :::primary
+    FSM --> SESSION_RECAP["Screen 11: Session Recap<br/>(Calories Burned, Rep Count & Form Accuracy %)"]
     SESSION_RECAP --> LOCAL_DB
     LOCAL_DB --> DASHBOARD
 ```
@@ -260,22 +257,22 @@ The Finite State Machine enforces rigorous form criteria before incrementing any
 ```mermaid
 stateDiagram-v2
     [*] --> Idle: Session Initialized
-    Idle --> Calibrating: Landmarks in Frame
-    Calibrating --> Tracking: Calibration Confirmed (>85% Confidence)
+    Idle --> Calibrating: Landmarks Detected in Frame
+    Calibrating --> Tracking: Calibration Confirmed (Confidence >= 85%)
     
     state Tracking {
         [*] --> Extension: Neutral Starting Stance
-        Extension --> InflectionPhase: Joint Angle < (Inflection - 5°)
-        InflectionPhase --> ExtensionPhase: Joint Angle > (Extension + 5°)
+        Extension --> InflectionPhase: Flexion (Below Inflection - 5 deg)
+        InflectionPhase --> ExtensionPhase: Extension (Above Extension + 5 deg)
         ExtensionPhase --> RepCounted: Full Range of Motion Verified
-        RepCounted --> Extension: Trigger Voice Cue & Increment
+        RepCounted --> Extension: Trigger Voice Cue & Increment Rep
     }
     
-    Tracking --> FormWarning: Joint Deviation Detected (>15° Error)
+    Tracking --> FormWarning: Joint Deviation Detected (Error > 15 deg)
     FormWarning --> Tracking: Form Corrected
-    Tracking --> Paused: User Pause / Out of Frame
+    Tracking --> Paused: User Pause or Out of Frame
     Paused --> Tracking: In-Frame Resume
-    Tracking --> Completed: Target Reps / Sets Achieved
+    Tracking --> Completed: Target Reps or Sets Achieved
     Completed --> [*]
 ```
 
