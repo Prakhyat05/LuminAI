@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 import 'navigation/main_navigation.dart';
 import 'services/firebase_service.dart';
+import 'widgets/web_phone_frame_wrapper.dart';
 
 // Onboarding
 import 'screens/onboarding/splash_screen.dart';
@@ -66,6 +67,9 @@ class LuminAIApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       initialRoute: '/',
+      builder: (context, child) {
+        return WebPhoneFrameWrapper(child: child ?? const SizedBox.shrink());
+      },
       routes: {
         '/': (_) => const SplashScreen(),
         '/onboarding': (_) => const _OnboardingFlow(),
