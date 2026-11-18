@@ -7,7 +7,6 @@
 ---
 
 [![Live Web Demo](https://img.shields.io/badge/🌐_Live_Demo-GitHub_Pages_(iPhone_Mockup)-00C853?style=for-the-badge&logo=github&logoColor=white)](https://prakhyat05.github.io/LuminAI/)
-[![Watch 1080p Video](https://img.shields.io/badge/🎬_Watch_Demo_Video-1080p_MP4-E50914?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4)
 [![Download APK](https://img.shields.io/badge/📱_Download_APK-v1.0.0_arm64_(53.7MB)-1A1A2E?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm64-v1.0.0.apk)
 [![GitHub Releases](https://img.shields.io/badge/📦_All_Releases-v1.0.0_Available-0969DA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Prakhyat05/LuminAI/releases/tag/v1.0.0)
 
@@ -18,25 +17,10 @@
 [![Google ML Kit](https://img.shields.io/badge/Google_ML_Kit-Pose_Detection_30FPS-4285F4?style=flat-square&logo=google&logoColor=white)](https://developers.google.com/ml-kit)
 [![Gemini 1.5 Flash](https://img.shields.io/badge/Google_Gemini-1.5_Flash_API-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)](https://ai.google.dev)
 [![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Live_Deployment-222222?style=flat-square&logo=githubpages&logoColor=white)](https://prakhyat05.github.io/LuminAI/)
-[![Firebase Hosting](https://img.shields.io/badge/Firebase-Live_Mirror-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://luminai-ai.web.app)
 [![SQLite](https://img.shields.io/badge/SQLite-Local_Persistence-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org)
 [![Build Size](https://img.shields.io/badge/APK_Size-53.7MB_(-62%25)-success?style=flat-square)](#-release-binaries--download-center)
 [![Test Suite](https://img.shields.io/badge/Tests-8%2F8_Passed_(100%25)-success?style=flat-square)](#-testing--quality-assurance)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
-
-</div>
-
----
-
-## 🎬 Official 1080p Video Walkthrough
-
-Click the player below to watch or download the complete 16:9 walkthrough video demonstrating the entire app flow, live computer vision tracking, and AI coaching functionalities:
-
-<div align="center">
-
-[![LuminAI 1080p Video Walkthrough](assets/images/video_preview.png)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4)
-
-*▶️ [Click here to download or stream the 1080p MP4 directly (4.55 MB)](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4)*
 
 </div>
 
@@ -310,7 +294,7 @@ Evaluating LuminAI is seamless even without hardware cameras or account setup:
 1. **One-Tap Guest Mode:** On the sign-in screen, tap **"Continue as Guest"** for instant access without entering credentials.
 2. **Camera Fallback Simulator:** If no camera is detected or when running on desktop/emulators, LuminAI automatically activates an algorithmic pose generator simulating authentic human kinematic cycles for testing reps and voice coaching.
 3. **Live Web Browser App (iPhone Simulation & Mobile Adaptive):** Test the entire UI, workout logging, AI generation, and settings directly in your browser without installing anything:  
-   👉 **[https://prakhyat05.github.io/LuminAI/](https://prakhyat05.github.io/LuminAI/)** *(Mirrors: [https://luminai-ai.web.app](https://luminai-ai.web.app), [https://luminai-fitness.web.app](https://luminai-fitness.web.app))*
+   👉 **[https://prakhyat05.github.io/LuminAI/](https://prakhyat05.github.io/LuminAI/)**
    - **On Desktop Viewports (>600px):** Automatically rendered inside a sleek, authentic Apple iPhone 15 Pro frame with titanium chassis, Dynamic Island, and studio ambient lighting.
    - **On Mobile Viewports (<=600px):** Automatically adapts to fill the native smartphone screen edge-to-edge.
 
@@ -320,14 +304,13 @@ Evaluating LuminAI is seamless even without hardware cameras or account setup:
 
 Official production builds are hosted on [GitHub Releases (v1.0.0)](https://github.com/Prakhyat05/LuminAI/releases/tag/v1.0.0):
 
-| Release Asset | Platform / Type | File Size | Description | Direct Download |
+| Release Asset | Platform / Architecture | File Size | Description | Direct Download |
 | :--- | :--- | :--- | :--- | :---: |
-| **`LuminAI-App-Walkthrough-16x9.mp4`** | **Official 1080p Video** | **4.55 MB** | **Complete 16:9 walkthrough video demonstrating live features** | [🎬 Watch / Download](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4) |
 | **`LuminAI-arm64-v1.0.0.apk`** | **Android 64-bit (`arm64-v8a`)** | **53.7 MB** | **Recommended for >99% of modern Android smartphones** | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm64-v1.0.0.apk) |
 | **`LuminAI-universal-v1.0.0.apk`** | Android Universal (Fat Binary) | 139.6 MB | All Android architectures combined | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-universal-v1.0.0.apk) |
 | **`LuminAI-arm32-v1.0.0.apk`** | Android 32-bit (`armeabi-v7a`) | 46.0 MB | Older legacy Android smartphones | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-arm32-v1.0.0.apk) |
 | **`LuminAI-x86_64-v1.0.0.apk`** | Android x86_64 | 53.1 MB | Android Studio Emulators & Chromebooks | [⬇️ Download APK](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-x86_64-v1.0.0.apk) |
-| **`LuminAI-web-v1.0.0.zip`** | Web Static Assets (SPA) | 7.6 MB | Self-hosting on Firebase, Netlify, or Apache | [⬇️ Download ZIP](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-web-v1.0.0.zip) |
+| **`LuminAI-web-v1.0.0.zip`** | Web Static Assets (SPA) | 7.6 MB | Self-hosting on GitHub Pages, Netlify, or Apache | [⬇️ Download ZIP](https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-web-v1.0.0.zip) |
 
 ---
 
@@ -405,6 +388,6 @@ Developed with ❤️ by **Prakhyat** as a Major Project.
 
 - **GitHub:** [@Prakhyat05](https://github.com/Prakhyat05)
 - **Repository:** [https://github.com/Prakhyat05/LuminAI](https://github.com/Prakhyat05/LuminAI)
-- **Live Demo (GitHub Pages):** [https://prakhyat05.github.io/LuminAI/](https://prakhyat05.github.io/LuminAI/) *(Mirrors: [https://luminai-ai.web.app](https://luminai-ai.web.app), [https://luminai-fitness.web.app](https://luminai-fitness.web.app))*
+- **Live Demo (GitHub Pages):** [https://prakhyat05.github.io/LuminAI/](https://prakhyat05.github.io/LuminAI/)
 
 This project is open-source under the **[MIT License](LICENSE)**.

@@ -644,13 +644,6 @@ class _WebPhoneFrameWrapperState extends State<WebPhoneFrameWrapper> {
           ),
           const SizedBox(height: 10),
           _downloadBadge(
-            icon: Icons.video_library_rounded,
-            title: '1080p Walkthrough Video',
-            size: '4.55 MB (MP4)',
-            url: 'https://github.com/Prakhyat05/LuminAI/releases/download/v1.0.0/LuminAI-App-Walkthrough-16x9.mp4',
-          ),
-          const SizedBox(height: 10),
-          _downloadBadge(
             icon: Icons.code_rounded,
             title: 'GitHub Source & Releases',
             size: 'MIT Licensed',
